@@ -28,7 +28,7 @@ function beautify(err, collection, map, callback) {
                     map = {
                         type: 'Duplicate value',
                         path: item[0],
-                        value[matches[2]]
+                        value: matches[2]
                     };
                     
                     if (typeof map[item[0]] === 'string') {
