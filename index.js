@@ -4,7 +4,7 @@ var MongooseError = require('mongoose/lib/error');
 var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
 
 /**
- * Beautifies an E11000 (unique constraint fail) Mongo error
+ * Beautifies an E11000 or 11001 (unique constraint fail) Mongo error
  * by turning it into a validation error
  * 
  * @param {MongoError} err Error to beautify
@@ -67,7 +67,7 @@ module.exports = function (schema) {
         
         this.save(function (err, doc) {
             // we have a native E11000 error, lets beautify it
-            if (err && err.name === 'MongoError' && err.code === 11000) {
+            if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
                 beautify(err, collection, map, function (newErr) {
                     callback(newErr, doc);
                 });
