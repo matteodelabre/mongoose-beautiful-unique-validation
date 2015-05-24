@@ -31,8 +31,8 @@ function beautify(err, collection, map, callback) {
                         value: matches[2]
                     };
                     
-                    if (typeof props[item[0]] === 'string') {
-                        props.message = props[item[0]];
+                    if (typeof map[item[0]] === 'string') {
+                        props.message = map[item[0]];
                     }
                     
                     valError.errors[item[0]] =
