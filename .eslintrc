@@ -9,7 +9,7 @@
         "brace-style": 2,
         "comma-spacing": 2,
         "comma-style": 2,
-        "quotes": [2, "simple"],
+        "quotes": [2, "single", "avoid-escape"],
         
         "no-trailing-spaces": 0,
         "no-underscore-dangle": 0
