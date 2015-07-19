@@ -1,6 +1,6 @@
 {
     "name": "mongoose-beautiful-unique-validation",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "description": "A Mongoose plugin that beautifies errors that are triggered on duplicate insertion",
     "license": "MIT",
     "main": "index.js",
@@ -24,6 +24,6 @@
     },
 
     "dependencies": {
-        "mongoose": "~4.0.3"
+        "mongoose": "~4.0.7"
     }
 }
