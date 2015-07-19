@@ -1,7 +1,6 @@
 # mongoose-beautiful-unique-validation
 
-A [Mongoose](https://github.com/Automattic/mongoose) plugin that beautifies
-errors that are triggered on duplicate insertion.
+Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors.
 
 [![npm version](https://img.shields.io/npm/v/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
