@@ -63,10 +63,9 @@ module.exports = function (schema) {
     }
 
     schema.methods.trySave = function (callback) {
-        var _this = this;
-        var collection = this.collection;
+        var that = this, collection = this.collection, proxyFn;
 
-        var proxyFn = function (resolve, handler) {
+        proxyFn = function (resolve, handler) {
             return function (err, doc) {
                 // we have a native E11000 error, lets beautify it
                 if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
@@ -82,14 +81,14 @@ module.exports = function (schema) {
                 }
 
                 handler(err, doc);
-            }
-        }
+            };
+        };
 
-        if ('function' === typeof callback) {
-            _this.save(proxyFn(null, callback));
+        if (typeof callback === 'function') {
+            this.save(proxyFn(null, callback));
         } else {
-            return new Promise(function(resolve, reject){
-                _this.save(proxyFn(resolve, reject));
+            return new Promise(function (resolve, reject) {
+                that.save(proxyFn(resolve, reject));
             });
         }
 
