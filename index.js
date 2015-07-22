@@ -6,7 +6,7 @@ var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
 /**
  * Beautifies an E11000 or 11001 (unique constraint fail) Mongo error
  * by turning it into a validation error
- * 
+ *
  * @param {MongoError} err Error to beautify
  * @param {Object} collection Collection for the associated model
  * @param {Object} map Map fields -> unique error messages
@@ -15,12 +15,12 @@ var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
  */
 function beautify(err, collection, map, callback) {
     var matches = regex.exec(err.message), props;
-    
+
     if (matches && typeof matches[1] === 'string') {
         collection.indexInformation(function (dbErr, indexes) {
             var valError = new MongooseError.ValidationError(err),
                 index = indexes && indexes[matches[1]];
-            
+
             if (!dbErr && index) {
                 // populate validation error with the fields
                 // contained in the index
@@ -30,19 +30,19 @@ function beautify(err, collection, map, callback) {
                         path: item[0],
                         value: matches[2]
                     };
-                    
+
                     if (typeof map[item[0]] === 'string') {
                         props.message = map[item[0]];
                     }
-                    
+
                     valError.errors[item[0]] =
                         new MongooseError.ValidatorError(props);
                 });
-                
+
                 callback(valError);
                 return;
             }
-            
+
             callback(dbErr);
         });
     }
@@ -50,7 +50,7 @@ function beautify(err, collection, map, callback) {
 
 module.exports = function (schema) {
     var tree = schema.tree, key, map = {};
-    
+
     // fetch error messages defined in the
     // 'unique' field, and replace them with 'true'
     for (key in tree) {
@@ -61,20 +61,39 @@ module.exports = function (schema) {
             }
         }
     }
-    
+
     schema.methods.trySave = function (callback) {
+        var _this = this;
+        var args = [].slice.call(arguments);
+        var lastArg = args.pop();
         var collection = this.collection;
-        
-        this.save(function (err, doc) {
-            // we have a native E11000 error, lets beautify it
-            if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
-                beautify(err, collection, map, function (newErr) {
-                    callback(newErr, doc);
-                });
-                return;
+
+        var proxyFn = function (resolve, handler) {
+            return function (err, doc) {
+                // we have a native E11000 error, lets beautify it
+                if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
+                    beautify(err, collection, map, function (newErr) {
+                        handler(newErr, doc);
+                    });
+                    return;
+                }
+
+                if (resolve != null && err == null) {
+                    resolve(doc);
+                    return;
+                }
+
+                handler(err, doc);
             }
-            
-            callback(err, doc);
-        });
+        }
+
+        if ('function' === typeof lastArg) {
+            _this.save(proxyFn(null, callback));
+        } else {
+            return new Promise(function(resolve, reject){
+                _this.save(proxyFn(resolve, reject));
+            });
+        }
+
     };
 };
