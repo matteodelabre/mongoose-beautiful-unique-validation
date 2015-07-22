@@ -64,8 +64,6 @@ module.exports = function (schema) {
 
     schema.methods.trySave = function (callback) {
         var _this = this;
-        var args = [].slice.call(arguments);
-        var lastArg = args.pop();
         var collection = this.collection;
 
         var proxyFn = function (resolve, handler) {
@@ -87,7 +85,7 @@ module.exports = function (schema) {
             }
         }
 
-        if ('function' === typeof lastArg) {
+        if ('function' === typeof callback) {
             _this.save(proxyFn(null, callback));
         } else {
             return new Promise(function(resolve, reject){
