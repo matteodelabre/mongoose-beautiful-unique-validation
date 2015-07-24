@@ -75,7 +75,8 @@ mongoose.connection.on('open', function () {
                     assert.end();
                 });
             }).catch(function (err) {
-                assert.fail(err, 'should save instance successfully');
+                assert.error(err, 'should save instance successfully');
+                assert.end();
             });
         });
 
@@ -87,16 +88,18 @@ mongoose.connection.on('open', function () {
                 name: name
             });
 
-            duplicateInst = new Model({
-                name: name
-            });
-
             originalInst.trySave().catch(function (err) {
-                assert.fail(err, 'should save original instance successfully');
+                assert.error(err, 'should save original instance successfully');
+                assert.end();
             }).then(function () {
+                duplicateInst = new Model({
+                    name: name
+                });
+
                 return duplicateInst.trySave();
             }).then(function () {
                 assert.fail('should not save duplicate successfully');
+                assert.end();
             }, function (err) {
                 assert.ok(err, 'err should exist');
                 assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
@@ -123,11 +126,13 @@ mongoose.connection.on('open', function () {
             });
 
             originalInst.trySave().catch(function (err) {
-                assert.fail(err);
+                assert.error(err, 'should save original instance successfully');
+                assert.end();
             }).then(function () {
                 return duplicateInst.trySave();
             }).then(function () {
-                assert.fail();
+                assert.fail('should not save duplicate successfully');
+                assert.end();
             }, function (err) {
                 assert.equal(err.errors.name.message, message, 'message should be our custom value');
                 assert.end();
