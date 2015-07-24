@@ -1,29 +1,29 @@
 {
-    "name": "mongoose-beautiful-unique-validation",
-    "version": "1.0.0",
-    "description": "A Mongoose plugin that beautifies errors that are triggered on duplicate insertion",
-    "license": "MIT",
-    "main": "index.js",
-
-    "repository": {
-        "type": "git",
-        "url": "http://github.com/MattouFP/mongoose-beautiful-unique-validation.git"
-    },
-
-    "keywords": [
-        "mongoose",
-        "mongodb",
-        "error",
-        "unique"
-    ],
-
-    "author": {
-        "name": "Mattéo DELABRE",
-        "email": "matteo.delabre@outlook.fr",
-        "url": "https://github.com/MattouFP"
-    },
-
-    "dependencies": {
-        "mongoose": "~4.0.7"
-    }
+  "name": "mongoose-beautiful-unique-validation",
+  "version": "1.0.0",
+  "description": "A Mongoose plugin that beautifies errors that are triggered on duplicate insertion",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/MattouFP/mongoose-beautiful-unique-validation.git"
+  },
+  "keywords": [
+    "mongoose",
+    "mongodb",
+    "error",
+    "unique"
+  ],
+  "author": {
+    "name": "Mattéo DELABRE",
+    "email": "matteo.delabre@outlook.fr",
+    "url": "https://github.com/MattouFP"
+  },
+  "dependencies": {
+    "mongoose": "~4.0.7",
+    "promise": "^7.0.3"
+  },
+  "devDependencies": {
+    "tape": "^4.0.1"
+  }
 }
