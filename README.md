@@ -4,8 +4,11 @@ Plugin for Mongoose that turns duplicate errors into regular Mongoose validation
 
 [![npm version](https://img.shields.io/npm/v/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
+[![build status](https://img.shields.io/travis/MattouFP/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://travis-ci.org/MattouFP/mongoose-beautiful-unique-validation)
+[![dependencies status](http://img.shields.io/david/mattoufp/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://david-dm.org/MattouFP/mongoose-beautiful-unique-validation)
 
-Mongoose allows you to define an unique index on a Schema's path, like this:
+Mongoose's unique constraint actually relies on MongoDB's `unique` field
+property. It means that, if you have a schema like that one:
 
 ```js
 var userSchema = mongoose.Schema({
@@ -16,9 +19,7 @@ var userSchema = mongoose.Schema({
 });
 ```
 
-So that you don't end up with two users that have the same name.
-However, the error that shows up when you try to save a duplicate
-model is not really beautiful:
+Unique constraint failures will look like this:
 
 ```json
 {
@@ -30,7 +31,13 @@ model is not really beautiful:
 }
 ```
 
-This plugin will turn these errors into standard Validator errors:
+This doesn't look like normal
+[Validator](http://mongoosejs.com/docs/validation.html)
+errors. While this might be suitable in most cases,
+[there are times where you just want to have a consistent output from the .save() method](https://github.com/Automattic/mongoose/issues/2284).
+
+This plugin will turn unique errors (E11000 and E11001) into
+[Validator](http://mongoosejs.com/docs/validation.html) errors:
 
 ```json
 {
@@ -54,9 +61,6 @@ This plugin will turn these errors into standard Validator errors:
 }
 ```
 
-See [Mongoose Validation](http://mongoosejs.com/docs/validation.html)
-for more information about validation errors.
-
 ## Install
 
 ```sh
@@ -79,12 +83,12 @@ var userSchema = mongoose.Schema({
 userSchema.plugin(require('mongoose-beautiful-unique-validation'));
 ```
 
-You also need to use the `.trySave()` method instead of
-the `.save()` one. The former will beautify the errors, leaving the
-default method alone.
+You also need to use `.trySave()` instead of `.save()` when
+persisting a model to the database. This ensures that this behaviour
+is not triggered where it is not expected to.
 
-If you want to customize the error message, just use the
-`unique` field as you would with the `required` validator:
+If you need to customize the error message, use the
+`unique` field as you would with another constraint:
 
 ```js
 var userSchema = mongoose.Schema({
@@ -99,7 +103,7 @@ userSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
 ## Contributing
 
-All contributions are welcome! 
+All contributions are welcome!
 In order to have a consistent repo, we however ask you
 to comply to the following conventions
 whenever possible.

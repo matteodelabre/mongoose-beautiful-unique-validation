@@ -69,7 +69,7 @@ module.exports = function (schema) {
 
         proxyFn = function (resolve, handler) {
             return function (err, doc) {
-                // we have a native E11000 error, lets beautify it
+                // we have a native E11000/11001 error, lets beautify it
                 if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
                     beautify(err, collection, map, function (newErr) {
                         handler(newErr, doc);
