@@ -1,6 +1,8 @@
 'use strict';
 
 var MongooseError = require('mongoose/lib/error');
+var Promise = require('promise');
+
 var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
 
 /**
