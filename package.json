@@ -8,6 +8,9 @@
     "type": "git",
     "url": "http://github.com/MattouFP/mongoose-beautiful-unique-validation.git"
   },
+  "scripts": {
+    "test": "./node_modules/.bin/tape tests/**/*.js | ./node_modules/.bin/tap-spec"
+  },
   "keywords": [
     "mongoose",
     "mongodb",
@@ -24,6 +27,7 @@
     "promise": "^7.0.3"
   },
   "devDependencies": {
+    "tap-spec": "^4.0.2",
     "tape": "^4.0.1"
   }
 }
