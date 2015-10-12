@@ -3,7 +3,7 @@
 var MongooseError = require('mongoose/lib/error');
 var Promise = require('promise');
 
-var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
+var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)".*?\}/;
 
 /**
  * Beautifies an E11000 or 11001 (unique constraint fail) Mongo error
@@ -47,6 +47,8 @@ function beautify(err, collection, map, callback) {
 
             callback(dbErr);
         });
+    } else {
+        callback(err);
     }
 }
 
