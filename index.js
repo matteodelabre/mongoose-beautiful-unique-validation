@@ -64,6 +64,16 @@ module.exports = function (schema) {
         }
     }
 
+    schema._indexes.forEach(function (index) {
+        if (index[0] && index[1] && index[1].unique) {
+            Object.keys(index[0]).forEach(function (indexKey) {
+                map[indexKey] = index[1].unique;
+            });
+
+            index[1].unique = true;
+        }
+    });
+
     schema.methods.trySave = function (callback) {
         var that = this, collection = this.collection, proxyFn;
 
