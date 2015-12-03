@@ -71,6 +71,8 @@ function beautify(err, collection, map, callback) {
 
             callback(createdError);
         });
+    } else {
+        callback(err);
     }
 }
 
