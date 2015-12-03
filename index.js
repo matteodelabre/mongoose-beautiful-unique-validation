@@ -3,7 +3,7 @@
 var MongooseError = require('mongoose/lib/error');
 var Promise = require('promise');
 
-var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
+var errorRegex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{(.*?)\}/;
 
 /**
  * Beautifies an E11000 or 11001 (unique constraint fail) Mongo error
@@ -16,36 +16,60 @@ var regex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{.*?:\s*"(.*)"\s*\}/;
  * @return {null}
  */
 function beautify(err, collection, map, callback) {
-    var matches = regex.exec(err.message), props;
+    var matches = errorRegex.exec(err.message),
+        indexName = matches[1], rawValues = matches[2].trim() + ',',
+        valueRegex = /\s*:\s*(\S*),/g;
 
-    if (matches && typeof matches[1] === 'string') {
+    if (matches) {
+        // look for the index contained in the MongoDB error
         collection.indexInformation(function (dbErr, indexes) {
-            var valError = new MongooseError.ValidationError(err),
-                index = indexes && indexes[matches[1]];
+            var prop, createdError, index;
 
-            if (!dbErr && index) {
-                // populate validation error with the fields
-                // contained in the index
-                index.forEach(function (item) {
-                    props = {
-                        type: 'Duplicate value',
-                        path: item[0],
-                        value: matches[2]
-                    };
-
-                    if (typeof map[item[0]] === 'string') {
-                        props.message = map[item[0]];
-                    }
-
-                    valError.errors[item[0]] =
-                        new MongooseError.ValidatorError(props);
-                });
-
-                callback(valError);
+            if (dbErr) {
+                callback(dbErr);
                 return;
             }
 
-            callback(dbErr);
+            index = indexes[indexName];
+
+            if (!index) {
+                callback(new Error(
+                    'mongoose-beautiful-unique-validation error: ' +
+                    'could not find index "' + indexName + '" among ' +
+                    'the collection\'s indexes'
+                ));
+            }
+
+            createdError = new MongooseError.ValidationError(err);
+
+            // populate validation error with the index's fields
+            index.forEach(function (item) {
+                var value = valueRegex.exec(rawValues)[1],
+                    path = item[0], props;
+
+                // value is parsed directly from the error
+                // string. Try to guess the value type (in a basic way)
+                if (value[0] === '"' || value[0] === "'") {
+                    value = value.substr(1, value.length - 2);
+                } else if (!isNaN(value)) {
+                    value = parseFloat(value);
+                }
+
+                props = {
+                    type: 'Duplicate value',
+                    path: path,
+                    value: value
+                };
+
+                if (typeof map[path] === 'string') {
+                    props.message = map[path];
+                }
+
+                createdError.errors[item[0]] =
+                    new MongooseError.ValidatorError(props);
+            });
+
+            callback(createdError);
         });
     }
 }
