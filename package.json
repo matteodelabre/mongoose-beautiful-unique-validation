@@ -23,7 +23,7 @@
     "url": "https://github.com/MattouFP"
   },
   "dependencies": {
-    "mongoose": "~4.1.0",
+    "mongoose": "~4.2.9",
     "promise": "^7.0.3"
   },
   "devDependencies": {
