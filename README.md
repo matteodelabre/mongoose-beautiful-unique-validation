@@ -4,8 +4,8 @@ Plugin for Mongoose that turns duplicate errors into regular Mongoose validation
 
 [![npm version](https://img.shields.io/npm/v/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
-[![build status](https://img.shields.io/travis/MattouFP/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://travis-ci.org/MattouFP/mongoose-beautiful-unique-validation)
-[![dependencies status](http://img.shields.io/david/mattoufp/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://david-dm.org/MattouFP/mongoose-beautiful-unique-validation)
+[![build status](https://img.shields.io/travis/matteodelabre/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://travis-ci.org/matteodelabre/mongoose-beautiful-unique-validation)
+[![dependencies status](http://img.shields.io/david/matteodelabre/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://david-dm.org/matteodelabre/mongoose-beautiful-unique-validation)
 
 Mongoose's unique constraint actually relies on MongoDB's `unique` field
 property. It means that, if you have a schema like that one:
