@@ -103,8 +103,8 @@ userSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
 ## Contributing
 
-Check out the [contribution guide.](https://github.com/matteodelabre/blob/master/CONTRIBUTING.md)
+Check out the [contribution guide.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/CONTRIBUTING.md)
 
 ## License
 
-See the [LICENSE.](https://github.com/matteodelabre/blob/master/LICENSE)
+See the [LICENSE.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/LICENSE)
