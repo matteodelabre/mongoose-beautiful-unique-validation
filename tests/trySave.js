@@ -166,7 +166,7 @@ mongoose.connection.on('open', function () {
 
             assert.end();
         });
-    })
+    });
 
     test('should use custom validation message', function (assert) {
         var message = 'works!', Model = makeModel(message),

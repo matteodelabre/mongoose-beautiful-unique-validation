@@ -23,7 +23,7 @@ function beautify(err, collection, map, callback) {
     if (matches) {
         // look for the index contained in the MongoDB error
         collection.indexInformation(function (dbErr, indexes) {
-            var prop, createdError, index;
+            var createdError, index;
 
             if (dbErr) {
                 callback(dbErr);
@@ -129,6 +129,5 @@ module.exports = function (schema) {
                 that.save(proxyFn(resolve, reject));
             });
         }
-
     };
 };
