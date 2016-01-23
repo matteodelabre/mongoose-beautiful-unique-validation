@@ -11,6 +11,9 @@
   "scripts": {
     "test": "tape tests/**/*.js | tap-spec"
   },
+  "engines": {
+    "node": ">=0.10.0"
+  },
   "keywords": [
     "mongoose",
     "mongodb",
