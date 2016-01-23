@@ -1,15 +1,13 @@
 language: node_js
 services:
     - mongodb
-before_script:
-    - sleep 15 # artificial wait needed to ensure MongoDB is started up
 node_js:
     - "5.1.0"
     - "4.2.2"
     - "0.12"
     - "0.10"
 env:
-  - CXX=g++-4.8
+    - CXX=g++-4.8
 addons:
     apt:
         sources:
