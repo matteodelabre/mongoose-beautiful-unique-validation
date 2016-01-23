@@ -26,8 +26,8 @@
     "url": "https://github.com/matteodelabre"
   },
   "dependencies": {
-    "mongoose": "^4.2.9",
-    "promise": "^7.0.3"
+    "mongoose": "^4.3.6",
+    "promise": "^7.1.1"
   },
   "devDependencies": {
     "kerberos": "0.0.18",
