@@ -54,7 +54,7 @@ function makeCompoundModel() {
     return mongoose.model(makeUniqueName(), schema);
 }
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://127.0.0.1/test');
 mongoose.connection.on('open', function () {
     test('should work like save', function (assert) {
         var Model = makeModel(),
