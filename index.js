@@ -3,7 +3,7 @@
 var MongooseError = require('mongoose/lib/error');
 var Promise = require('promise');
 
-var errorRegex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{(.*?)\}/;
+var errorRegex = /index:\s*(?:.+?\.\$)?(\S*)\s*dup key:\s*\{(.*?)\}/;
 
 /**
  * Beautifies an E11000 or 11001 (unique constraint fail) Mongo error
