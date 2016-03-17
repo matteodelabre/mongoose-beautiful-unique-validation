@@ -4,7 +4,7 @@ var MongooseError = require('mongoose/lib/error');
 var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
-var errorRegex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{(.*?)\}/;
+var errorRegex = /index:\s*(?:.+?\.\$)?(\S*)\s*dup key:\s*\{(.*?)\}/;
 var indexesCache = {};
 
 /**
