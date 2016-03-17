@@ -1,10 +1,22 @@
 'use strict';
 
 var MongooseError = require('mongoose/lib/error');
+var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
 var errorRegex = /index:\s*.+?\.\$(\S*)\s*dup key:\s*\{(.*?)\}/;
 var indexesCache = {};
+
+/**
+ * Check if given error is an unique error
+ *
+ * @param {Object} err Error to test
+ * @return {bool} True if it is an unique error
+ */
+function isUniqueError(err) {
+    return err && err.name === 'MongoError' &&
+        (err.code === 11000 || err.code === 11001);
+}
 
 /**
  * Retrieve index information using collection#indexInformation
@@ -134,22 +146,37 @@ module.exports = function (schema) {
      * Save the schema in the database, beautify any
      * unique error produced in the process
      *
+     * @param {Object} [options] Options for #save
+     * @param {bool} [options.safe] Overrides schema's safe option
+     * @param {bool} [options.validateBeforeSave] Set to false to save without validating
+     * @param {bool} [options.beautifyUnique] Set to false to disable beautifying unique errors
      * @param {function} [callback] Callback called with any error and the document
      * @return {Promise} If no callback was provided, resolved with the
      * document and fails if any error was produced
      */
-    schema.methods.trySave = function (callback) {
+    schema.methods.save = function (options, callback) {
         var that = this, collection = this.collection;
 
-        // use a no-op callback by default
-        if (!callback) {
+        // default arguments
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
+        }
+
+        if (options === undefined) {
+            options = {};
+        }
+
+        if (typeof callback !== 'function') {
             callback = function () {};
         }
 
+        var beautifyUnique = options.beautifyUnique !== false;
+
         return new Promise(function (resolve, reject) {
-            that.save(function (err, document, numAffected) {
+            mongooseModelSave.call(that, options, function (err, document, numAffected) {
                 // we have a native E11000/11001 error, lets beautify it
-                if (err && err.name === 'MongoError' && (err.code === 11000 || err.code === 11001)) {
+                if (isUniqueError(err) && beautifyUnique) {
                     beautify(err, collection, messages).then(function (beautifiedErr) {
                         // successfully beautified the error
                         reject(beautifiedErr);
@@ -175,4 +202,19 @@ module.exports = function (schema) {
             });
         });
     };
+
+    /**
+     * Deprecated, use #save instead
+     */
+    schema.methods.trySave = function (callback) {
+        // /!\ Deprecation warning
+        console.warn(
+            'mongoose-beautiful-unique-validation: Model#trySave() is ' +
+            'deprecated, use Model#save() instead. To disable ' +
+            'beautifying on plugged-in models, set the "beautifyUnique" ' +
+            'option to false in this function\'s arguments'
+        );
+
+        return this.save({}, callback);
+    }
 };
