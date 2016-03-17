@@ -37,19 +37,20 @@ function makeModel(custom) {
 /**
  * Create a model with a compound unique index
  *
+ * @param {string} custom Custom unique validation message
  * @return {Model} Mongoose model
  */
-function makeCompoundModel() {
+function makeCompoundModel(custom) {
     var schema = new mongoose.Schema({
         name: String,
         email: String
     });
 
-    schema.plugin(beautifulValidation);
     schema.index({
         name: 1,
         email: 1
-    }, {unique: true});
+    }, {unique: custom || true});
+    schema.plugin(beautifulValidation);
 
     return mongoose.model(makeUniqueName(), schema);
 }
@@ -190,6 +191,32 @@ mongoose.connection.on('open', function () {
             assert.end();
         }, function (err) {
             assert.equal(err.errors.name.message, message, 'message should be our custom value');
+            assert.end();
+        });
+    });
+
+    test('should use custom validation message (compound index)', function (assert) {
+        var message = 'works!', Model = makeCompoundModel(message),
+            originalInst, duplicateInst, name = 'duptest';
+
+        originalInst = new Model({
+            name: name
+        });
+
+        duplicateInst = new Model({
+            name: name
+        });
+
+        originalInst.trySave().catch(function (err) {
+            assert.error(err, 'should save original instance successfully');
+            assert.end();
+        }).then(function () {
+            return duplicateInst.trySave();
+        }).then(function () {
+            assert.fail('should not save duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.equal(err.errors.name.message, message, 'message should be our custom value (compound)');
             assert.end();
         });
     });
