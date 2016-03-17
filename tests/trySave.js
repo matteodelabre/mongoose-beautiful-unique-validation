@@ -65,7 +65,7 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        instance.trySave(function (saveErr) {
+        instance.save(function (saveErr) {
             assert.error(saveErr, 'should save instance successfully');
 
             Model.find({
@@ -86,7 +86,7 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        instance.trySave().then(function () {
+        instance.save().then(function () {
             Model.find({
                 name: name
             }, function (err, found) {
@@ -108,7 +108,7 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        originalInst.trySave().catch(function (err) {
+        originalInst.save().catch(function (err) {
             assert.error(err, 'should save original instance successfully');
             assert.end();
         }).then(function () {
@@ -116,7 +116,7 @@ mongoose.connection.on('open', function () {
                 name: name
             });
 
-            return duplicateInst.trySave();
+            return duplicateInst.save();
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
@@ -143,7 +143,7 @@ mongoose.connection.on('open', function () {
             email: email
         });
 
-        originalInst.trySave().catch(function (err) {
+        originalInst.save().catch(function (err) {
             assert.error(err, 'should save original instance successfully');
             assert.end();
         }).then(function () {
@@ -152,11 +152,13 @@ mongoose.connection.on('open', function () {
                 email: email
             });
 
-            return duplicateInst.trySave();
+            return duplicateInst.save();
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
+            console.log(err);
+
             assert.ok(err, 'err should exist');
             assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
             assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
@@ -181,11 +183,11 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        originalInst.trySave().catch(function (err) {
+        originalInst.save().catch(function (err) {
             assert.error(err, 'should save original instance successfully');
             assert.end();
         }).then(function () {
-            return duplicateInst.trySave();
+            return duplicateInst.save();
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
@@ -207,11 +209,11 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        originalInst.trySave().catch(function (err) {
+        originalInst.save().catch(function (err) {
             assert.error(err, 'should save original instance successfully');
             assert.end();
         }).then(function () {
-            return duplicateInst.trySave();
+            return duplicateInst.save();
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
