@@ -2,6 +2,8 @@
     "extends": "eslint:recommended",
 
     "rules": {
+        "no-console": 0,
+
         "no-shadow": 2,
         "no-catch-shadow": 2,
         "no-shadow-restricted-names": 2,
