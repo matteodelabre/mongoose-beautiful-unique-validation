@@ -26,12 +26,12 @@
     "url": "https://github.com/matteodelabre"
   },
   "dependencies": {
-    "mongoose": "^4.3.6",
+    "mongoose": "^4.4.7",
     "promise": "^7.1.1"
   },
   "devDependencies": {
-    "kerberos": "0.0.18",
-    "tap-spec": "^4.0.2",
-    "tape": "^4.0.1"
+    "kerberos": "0.0.19",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.5.1"
   }
 }
