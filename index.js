@@ -49,11 +49,11 @@ function getIndexes(collection) {
  * by turning it into a validation error
  *
  * @param {MongoError} err Error to process
- * @param {Object} collection Collection for the associated model
+ * @param {Object} model Model associated to the document
  * @param {Object} messages Map fields to unique error messages
  * @return {Promise} Resolved with the beautified error message
  */
-function beautify(error, collection, messages) {
+function beautify(error, model, messages) {
     var matches, indexName, rawValues, valueRegex;
 
     // get index name from the error message
@@ -72,7 +72,7 @@ function beautify(error, collection, messages) {
         }
 
         // look for the index contained in the MongoDB error
-        getIndexes(collection).then(function (indexes) {
+        getIndexes(model.collection).then(function (indexes) {
             var index = indexes[indexName];
 
             if (!index) {
@@ -84,7 +84,7 @@ function beautify(error, collection, messages) {
                 return;
             }
 
-            var createdError = new MongooseError.ValidationError(error);
+            var createdError = new MongooseError.ValidationError(model);
 
             // populate validation error with the index's fields
             index.forEach(function (item) {
@@ -155,7 +155,7 @@ module.exports = function (schema) {
      * document and fails if any error was produced
      */
     schema.methods.save = function (options, callback) {
-        var that = this, collection = this.collection;
+        var that = this;
 
         // default arguments
         if (typeof options === 'function') {
@@ -177,7 +177,7 @@ module.exports = function (schema) {
             mongooseModelSave.call(that, options, function (err, document, numAffected) {
                 // we have a native E11000/11001 error, lets beautify it
                 if (isUniqueError(err) && beautifyUnique) {
-                    beautify(err, collection, messages).then(function (beautifiedErr) {
+                    beautify(err, that, messages).then(function (beautifiedErr) {
                         // successfully beautified the error
                         reject(beautifiedErr);
                         callback(beautifiedErr);
@@ -216,5 +216,5 @@ module.exports = function (schema) {
         );
 
         return this.save({}, callback);
-    }
+    };
 };
