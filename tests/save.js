@@ -3,6 +3,7 @@
 var test = require('tape');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
+var Promise = require('promise');
 var beautifulValidation = require('../');
 
 /**
@@ -53,6 +54,18 @@ function makeCompoundModel(custom) {
     schema.plugin(beautifulValidation);
 
     return mongoose.model(makeUniqueName(), schema);
+}
+
+/**
+ * Make a promise that resolves after n milliseconds
+ *
+ * @param {number} time Time to wait in milliseconds
+ * @return {Promise} Resolved after n milliseconds
+ */
+function waitFor(time) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, time);
+    });
 }
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -118,6 +131,9 @@ mongoose.connection.on('open', function () {
 
             return duplicateInst.save();
         }).then(function () {
+            // avoid concurrency problems
+            return waitFor(500);
+        }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
@@ -154,11 +170,12 @@ mongoose.connection.on('open', function () {
 
             return duplicateInst.save();
         }).then(function () {
+            // avoid concurrency problems
+            return waitFor(500);
+        }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
-            console.log(err);
-
             assert.ok(err, 'err should exist');
             assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
             assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
@@ -187,6 +204,9 @@ mongoose.connection.on('open', function () {
             assert.error(err, 'should save original instance successfully');
             assert.end();
         }).then(function () {
+            // avoid concurrency problems
+            return waitFor(500);
+        }).then(function () {
             return duplicateInst.save();
         }).then(function () {
             assert.fail('should not save duplicate successfully');
@@ -212,6 +232,9 @@ mongoose.connection.on('open', function () {
         originalInst.save().catch(function (err) {
             assert.error(err, 'should save original instance successfully');
             assert.end();
+        }).then(function () {
+            // avoid concurrency problems
+            return waitFor(500);
         }).then(function () {
             return duplicateInst.save();
         }).then(function () {
