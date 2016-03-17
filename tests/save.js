@@ -132,7 +132,7 @@ mongoose.connection.on('open', function () {
             return duplicateInst.save();
         }).then(function () {
             // avoid concurrency problems
-            return waitFor(500);
+            return waitFor(5000);
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
@@ -171,7 +171,7 @@ mongoose.connection.on('open', function () {
             return duplicateInst.save();
         }).then(function () {
             // avoid concurrency problems
-            return waitFor(500);
+            return waitFor(5000);
         }).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
@@ -205,7 +205,7 @@ mongoose.connection.on('open', function () {
             assert.end();
         }).then(function () {
             // avoid concurrency problems
-            return waitFor(500);
+            return waitFor(5000);
         }).then(function () {
             return duplicateInst.save();
         }).then(function () {
@@ -234,7 +234,7 @@ mongoose.connection.on('open', function () {
             assert.end();
         }).then(function () {
             // avoid concurrency problems
-            return waitFor(500);
+            return waitFor(5000);
         }).then(function () {
             return duplicateInst.save();
         }).then(function () {
