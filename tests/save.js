@@ -65,7 +65,7 @@ mongoose.connection.on('open', function () {
             name: name
         });
 
-        instance.trySave(function (saveErr) {
+        instance.save(function (saveErr) {
             assert.error(saveErr, 'should save instance successfully');
 
             Model.find({
