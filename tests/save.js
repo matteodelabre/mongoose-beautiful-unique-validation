@@ -254,7 +254,7 @@ mongoose.connection.on('open', function () {
 
     test('closing connection', function (assert) {
         // clean up the test database
-        mongoose.connection.db.dropDatabase().then(function (abc) {
+        mongoose.connection.db.dropDatabase().then(function () {
             mongoose.disconnect();
             assert.end();
         }).catch(function (err) {
