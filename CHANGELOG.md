@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.1
+
+### Fixed bugs
+
+* Throw a more meaningful error when the message from MongoDB
+cannot be parsed correctly.
+
+* Fix the parsing regex to allow fields containing whitespace.
+
 ## v3.0.0
 
 ### Breaking changes
@@ -20,4 +29,3 @@ the `beautifyUnique` option to `false`.
 
 * Some incompatibilities with various MongoDB versions have been
 fixed. Refer to #13, #14 for more information.
-

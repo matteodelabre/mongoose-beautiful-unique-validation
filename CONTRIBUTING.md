@@ -18,4 +18,3 @@ fixed the issue "Improve documentation", you could have chosen
 Please follow the style guide defined in `.eslintrc`. You can use
 [ESLint](http://eslint.org/) to automatically check if your code
 complies with it.
-
