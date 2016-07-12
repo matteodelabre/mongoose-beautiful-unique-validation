@@ -3,6 +3,7 @@
 var test = require('tape');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
+var Promise = require('promise');
 var beautifulValidation = require('../');
 
 // use global promise
