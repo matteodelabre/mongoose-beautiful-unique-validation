@@ -10,6 +10,19 @@ var beautifulValidation = require('../');
 mongoose.Promise = global.Promise;
 
 /**
+ * Return a promise that is resolved
+ * nth milliseconds afterwards
+ *
+ * @param {number} time Time to wait in milliseconds
+ * @return {Promise}
+ */
+function wait(time) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, time);
+    });
+}
+
+/**
  * Generate a 8-chars random string
  * (should be sufficiently unique for a few tests)
  *
@@ -59,8 +72,9 @@ function makeModel(fieldNames, message) {
         });
     }
 
+    var modelName = uniqueString();
     schema.plugin(beautifulValidation);
-    return mongoose.model(uniqueString(), schema);
+    return mongoose.model(modelName, schema, modelName);
 }
 
 // connect to a database with a random name
@@ -110,6 +124,9 @@ mongoose.connection.on('open', function () {
         new Model({
             name: name
         }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
+        }).then(function () {
             // try to save a duplicate (should not work)
             new Model({
                 name: name
@@ -140,6 +157,9 @@ mongoose.connection.on('open', function () {
         new Model({
             'display name': name
         }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
+        }).then(function () {
             // try to save a duplicate (should not work)
             new Model({
                 'display name': name
@@ -165,6 +185,9 @@ mongoose.connection.on('open', function () {
             name: name,
             email: email
         }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
+        }).then(function () {
             // try to save a duplicate (should not work)
             new Model({
                 name: name,
@@ -197,6 +220,9 @@ mongoose.connection.on('open', function () {
         new Model({
             name: name
         }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
+        }).then(function () {
             // try to save a duplicate (should not work)
             new Model({
                 name: name
@@ -221,6 +247,9 @@ mongoose.connection.on('open', function () {
         new Model({
             name: name
         }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
+        }).then(function () {
             // try to save a duplicate (should not work)
             new Model({
                 name: name
