@@ -185,9 +185,10 @@ mongoose.connection.on('open', function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
-            assert.equal(err.errors.name.message, message);
+            assert.equal(err.errors.name.message, message, 'should have correct error message');
             assert.end();
-        }).catch(function () {
+        }).catch(function (err) {
+            console.error(err.stack);
             assert.fail('correct error message not found');
             assert.end();
         });
