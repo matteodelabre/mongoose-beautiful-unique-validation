@@ -6,60 +6,64 @@ var mongoose = require('mongoose');
 var beautifulValidation = require('../');
 
 /**
- * Create an unique model name
+ * Generate a 8-chars random string
  * (should be sufficiently unique for a few tests)
  *
- * @return {string} Random model name
+ * @return {string} Random string
  */
-function makeUniqueName() {
+function uniqueString() {
     return crypto.randomBytes(8).toString('hex');
 }
 
 /**
- * Create a model with an unique "name"
- * property and a random name
+ * Create a randomly-named model with any number
+ * of fields. This model has an unique index over
+ * all created fields
  *
- * @param {string} custom Custom unique validation message
- * @return {Model} Moongoose model
- */
-function makeModel(custom, fieldName) {
-    var fields = {};
-    fields[fieldName || 'name'] = {
-        type: String,
-        unique: custom || true
-    };
-
-    var schema = new mongoose.Schema(fields);
-
-    schema.plugin(beautifulValidation);
-    return mongoose.model(makeUniqueName(), schema);
-}
-
-/**
- * Create a model with a compound unique index
- *
- * @param {string} custom Custom unique validation message
+ * @param {Array<string>|string} fieldNames Names of the fields
+ * @param {string} [message=default message] Custom unique validation message
  * @return {Model} Mongoose model
  */
-function makeCompoundModel(custom) {
-    var schema = new mongoose.Schema({
-        name: String,
-        email: String
-    });
+function makeModel(fieldNames, message) {
+    var schema;
 
-    schema.index({
-        name: 1,
-        email: 1
-    }, {unique: custom || true});
+    if (Array.isArray(fieldNames) && fieldNames.length > 1) {
+        // if there is more than one field,
+        // we create a compound index
+        var index = {}, fields = {};
+
+        fieldNames.forEach(fieldName => {
+            fields[fieldName] = String;
+            index[fieldName] = 1;
+        });
+
+        schema = new mongoose.Schema(fields);
+        schema.index(index, {
+            unique: message || true
+        });
+    } else {
+        // otherwise, we create a simple index
+        if (Array.isArray(fieldNames)) {
+            fieldNames = fieldNames[0];
+        }
+
+        schema = new mongoose.Schema({
+            [fieldNames]: {
+                type: String,
+                unique: message || true
+            }
+        });
+    }
+
     schema.plugin(beautifulValidation);
-
-    return mongoose.model(makeUniqueName(), schema);
+    return mongoose.model(uniqueString(), schema);
 }
 
-mongoose.connect('mongodb://127.0.0.1/test');
+// connect to a database with a random name
+mongoose.connect('mongodb://127.0.0.1/mongoose-buv-' + uniqueString());
 mongoose.connection.on('open', function () {
     test('should work like save', function (assert) {
-        var Model = makeModel(),
+        var Model = makeModel('name'),
             instance, name = 'testing';
 
         instance = new Model({
@@ -80,7 +84,7 @@ mongoose.connection.on('open', function () {
     });
 
     test('should work with promises', function (assert) {
-        var Model = makeModel(),
+        var Model = makeModel('name'),
             instance, name = 'testing';
 
         instance = new Model({
@@ -102,7 +106,7 @@ mongoose.connection.on('open', function () {
     });
 
     test('should emit duplicate validation error', function (assert) {
-        var Model = makeModel(),
+        var Model = makeModel('name'),
             originalInst, duplicateInst, name = 'duptest';
 
         originalInst = new Model({
@@ -134,8 +138,34 @@ mongoose.connection.on('open', function () {
         });
     });
 
+    test('should work with spaces in field name', function (assert) {
+        var message = 'works!', Model = makeModel('display name', message),
+            originalInst, duplicateInst, name = 'duptest';
+
+        originalInst = new Model({
+            'display name': name
+        });
+
+        duplicateInst = new Model({
+            'display name': name
+        });
+
+        originalInst.save().catch(function (err) {
+            assert.error(err, 'should save original instance successfully');
+            assert.end();
+        }).then(function () {
+            return duplicateInst.save();
+        }).then(function () {
+            assert.fail('should not save duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.equal(err.errors['display name'].properties.path, 'display name', 'should keep the key with spaces');
+            assert.end();
+        });
+    });
+
     test('should work with compound unique indexes', function (assert) {
-        var Model = makeCompoundModel(),
+        var Model = makeModel(['name', 'email']),
             name = 'duptest', email = 'duptest@example.com',
             originalInst, duplicateInst;
 
@@ -171,7 +201,7 @@ mongoose.connection.on('open', function () {
     });
 
     test('should use custom validation message', function (assert) {
-        var message = 'works!', Model = makeModel(message),
+        var message = 'works!', Model = makeModel('name', message),
             originalInst, duplicateInst, name = 'duptest';
 
         originalInst = new Model({
@@ -196,34 +226,8 @@ mongoose.connection.on('open', function () {
         });
     });
 
-    test('should work with spaces in field name', function (assert) {
-        var message = 'works!', Model = makeModel(message, 'display name'),
-            originalInst, duplicateInst, name = 'duptest';
-
-        originalInst = new Model({
-            'display name': name
-        });
-
-        duplicateInst = new Model({
-            'display name': name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
-        }, function (err) {
-            assert.equal(err.errors['display name'].properties.path, 'display name', 'should keep the key with spaces');
-            assert.end();
-        });
-    });
-
     test('should use custom validation message (compound index)', function (assert) {
-        var message = 'works!', Model = makeCompoundModel(message),
+        var message = 'works!', Model = makeModel(['name', 'email'], message),
             originalInst, duplicateInst, name = 'duptest';
 
         originalInst = new Model({
@@ -249,7 +253,13 @@ mongoose.connection.on('open', function () {
     });
 
     test('closing connection', function (assert) {
-        mongoose.disconnect();
-        assert.end();
+        // clean up the test database
+        mongoose.connection.db.dropDatabase().then(function (abc) {
+            mongoose.disconnect();
+            assert.end();
+        }).catch(function (err) {
+            assert.error(err, 'should clean up the test database');
+            assert.end();
+        });
     });
 });
