@@ -164,6 +164,35 @@ mongoose.connection.on('open', function () {
         });
     });
 
+    test('should work with spaces in field value', function (assert) {
+        var message = 'works!', Model = makeModel('name', message),
+            originalInst, duplicateInst, name = 'dup test';
+
+        originalInst = new Model({
+            name: name
+        });
+
+        duplicateInst = new Model({
+            name: name
+        });
+
+        originalInst.save().catch(function (err) {
+            assert.error(err, 'should save original instance successfully');
+            assert.end();
+        }).then(function () {
+            return duplicateInst.save();
+        }).then(function () {
+            assert.fail('should not save duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.equal(err.errors.name.message, message);
+            assert.end();
+        }).catch(function () {
+            assert.fail('correct error message not found');
+            assert.end();
+        });
+    });
+
     test('should work with compound unique indexes', function (assert) {
         var Model = makeModel(['name', 'email']),
             name = 'duptest', email = 'duptest@example.com',
