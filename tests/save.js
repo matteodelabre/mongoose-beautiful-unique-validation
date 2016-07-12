@@ -73,9 +73,8 @@ function makeModel(fieldNames, message) {
         schema = new mongoose.Schema(fields);
     }
 
-    var modelName = uniqueString();
     schema.plugin(beautifulValidation);
-    return mongoose.model(modelName, schema, modelName);
+    return mongoose.model(uniqueString(), schema);
 }
 
 // connect to a database with a random name
