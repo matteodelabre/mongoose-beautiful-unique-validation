@@ -67,14 +67,11 @@ function makeModel(fieldNames, message) {
 mongoose.connect('mongodb://127.0.0.1/mongoose-buv-' + uniqueString());
 mongoose.connection.on('open', function () {
     test('should work like save', function (assert) {
-        var Model = makeModel('name'),
-            instance, name = 'testing';
+        var name = 'normal-test', Model = makeModel('name');
 
-        instance = new Model({
+        new Model({
             name: name
-        });
-
-        instance.save(function (saveErr) {
+        }).save(function (saveErr) {
             assert.error(saveErr, 'should save instance successfully');
 
             Model.find({
@@ -88,14 +85,11 @@ mongoose.connection.on('open', function () {
     });
 
     test('should work with promises', function (assert) {
-        var Model = makeModel('name'),
-            instance, name = 'testing';
+        var name = 'promise-test', Model = makeModel('name');
 
-        instance = new Model({
+        new Model({
             name: name
-        });
-
-        instance.save().then(function () {
+        }).save().then(function () {
             Model.find({
                 name: name
             }, function (err, found) {
@@ -103,155 +97,142 @@ mongoose.connection.on('open', function () {
                 assert.equal(found[0].name, name, 'should keep props & values');
                 assert.end();
             });
-        }).catch(function (err) {
+        }, function (err) {
             assert.error(err, 'should save instance successfully');
             assert.end();
         });
     });
 
     test('should emit duplicate validation error', function (assert) {
-        var Model = makeModel('name'),
-            originalInst, duplicateInst, name = 'duptest';
+        var name = 'duplicate-test', Model = makeModel('name');
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             name: name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            duplicateInst = new Model({
+        }).save().then(function () {
+            // try to save a duplicate (should not work)
+            new Model({
                 name: name
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.ok(err, 'err should exist');
+                assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+                assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
+                assert.equal(err.errors.name.kind, 'Duplicate value', 'kind of err should be Duplicate value');
+                assert.equal(err.errors.name.properties.path, 'name', 'err should be on the correct path');
+                assert.equal(err.errors.name.properties.type, 'Duplicate value');
+                assert.equal(err.errors.name.properties.value, name, 'err should contain the problematic value');
+
+                assert.end();
             });
-
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
         }, function (err) {
-            assert.ok(err, 'err should exist');
-            assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
-            assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
-            assert.equal(err.errors.name.kind, 'Duplicate value', 'kind of err should be Duplicate value');
-            assert.equal(err.errors.name.properties.path, 'name', 'err should be on the correct path');
-            assert.equal(err.errors.name.properties.type, 'Duplicate value');
-            assert.equal(err.errors.name.properties.value, name, 'err should contain the problematic value');
-
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
 
     test('should work with spaces in field name', function (assert) {
-        var message = 'works!', Model = makeModel('display name', message),
-            originalInst, duplicateInst, name = 'duptest';
+        var name = 'duplicate-test-spaces', Model = makeModel('display name');
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             'display name': name
-        });
-
-        duplicateInst = new Model({
-            'display name': name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
+        }).save().then(function () {
+            // try to save a duplicate (should not work)
+            new Model({
+                'display name': name
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.equal(err.errors['display name'].properties.path, 'display name', 'should keep the key with spaces');
+                assert.end();
+            });
         }, function (err) {
-            assert.equal(err.errors['display name'].properties.path, 'display name', 'should keep the key with spaces');
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
 
     test('should work with compound unique indexes', function (assert) {
-        var Model = makeModel(['name', 'email']),
-            name = 'duptest', email = 'duptest@example.com',
-            originalInst, duplicateInst;
+        var name = 'duplicate-test-compound', email = 'test@example.com',
+            Model = makeModel(['name', 'email']);
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             name: name,
             email: email
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            duplicateInst = new Model({
+        }).save().then(function () {
+            // try to save a duplicate (should not work)
+            new Model({
                 name: name,
                 email: email
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.ok(err, 'err should exist');
+                assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+                assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
+                assert.equal(err.errors.name.kind, 'Duplicate value', 'kind of err should be Duplicate value');
+                assert.equal(err.errors.name.properties.path, 'name', 'err should be on the correct path');
+                assert.equal(err.errors.name.properties.type, 'Duplicate value');
+                assert.equal(err.errors.name.properties.value, name, 'err should contain the problematic value');
+
+                assert.end();
             });
-
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
         }, function (err) {
-            assert.ok(err, 'err should exist');
-            assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
-            assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
-            assert.equal(err.errors.name.kind, 'Duplicate value', 'kind of err should be Duplicate value');
-            assert.equal(err.errors.name.properties.path, 'name', 'err should be on the correct path');
-            assert.equal(err.errors.name.properties.type, 'Duplicate value');
-            assert.equal(err.errors.name.properties.value, name, 'err should contain the problematic value');
-
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
 
     test('should use custom validation message', function (assert) {
-        var message = 'works!', Model = makeModel('name', message),
-            originalInst, duplicateInst, name = 'duptest';
+        var name = 'duplicate-test-message', message = 'works!',
+            Model = makeModel('name', message);
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             name: name
-        });
-
-        duplicateInst = new Model({
-            name: name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
+        }).save().then(function () {
+            // try to save a duplicate (should not work)
+            new Model({
+                name: name
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.equal(err.errors.name.message, message, 'message should be our custom value');
+                assert.end();
+            });
         }, function (err) {
-            assert.equal(err.errors.name.message, message, 'message should be our custom value');
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
 
     test('should use custom validation message (compound index)', function (assert) {
-        var message = 'works!', Model = makeModel(['name', 'email'], message),
-            originalInst, duplicateInst, name = 'duptest';
+        var name = 'duplicate-test-message-compound', message = 'works!',
+            Model = makeModel(['name', 'email'], message);
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             name: name
-        });
-
-        duplicateInst = new Model({
-            name: name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
-        }).then(function () {
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
+        }).save().then(function () {
+            // try to save a duplicate (should not work)
+            new Model({
+                name: name
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.equal(err.errors.name.message, message, 'message should be our custom value (compound)');
+                assert.end();
+            });
         }, function (err) {
-            assert.equal(err.errors.name.message, message, 'message should be our custom value (compound)');
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
