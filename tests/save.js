@@ -5,6 +5,10 @@ var crypto = require('crypto');
 var mongoose = require('mongoose');
 var beautifulValidation = require('../');
 
+// use global promise
+// see http://mongoosejs.com/docs/promises.html
+mongoose.Promise = global.Promise;
+
 /**
  * Generate a 8-chars random string
  * (should be sufficiently unique for a few tests)
