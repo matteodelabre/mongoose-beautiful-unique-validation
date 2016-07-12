@@ -4,7 +4,7 @@ var MongooseError = require('mongoose/lib/error');
 var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
-var errorRegex = /index:\s*(?:.+?\.\$)?(\S*)\s*dup key:\s*\{(.*?)\}/;
+var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup key:\s*\{(.*?)\}/;
 var indexesCache = {};
 
 /**
@@ -56,12 +56,10 @@ function getIndexes(collection) {
 function beautify(error, model, messages) {
     var matches, indexName, rawValues, valueRegex;
 
-    // get index name from the error message
-    matches = errorRegex.exec(error.message),
-    indexName = matches[1], rawValues = matches[2].trim() + ',';
-    valueRegex = /\s*:\s*(\S*),/g;
-
     return new Promise(function (resolve, reject) {
+        // get index name from the error message
+        matches = errorRegex.exec(error.message);
+
         if (!matches) {
             reject(new Error(
                 'mongoose-beautiful-unique-validation error: ' +
@@ -70,6 +68,9 @@ function beautify(error, model, messages) {
             ));
             return;
         }
+
+        indexName = matches[1], rawValues = matches[2].trim() + ',';
+        valueRegex = /\s*:\s*(\S*),/g;
 
         // look for the index contained in the MongoDB error
         getIndexes(model.collection).then(function (indexes) {
