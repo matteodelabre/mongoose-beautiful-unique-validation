@@ -4,7 +4,7 @@ var MongooseError = require('mongoose/lib/error');
 var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
-var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup key:\s*\{(.*?)\}/;
+var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup key:\s*(\{.*?\})/;
 var indexesCache = {};
 
 /**
@@ -54,11 +54,10 @@ function getIndexes(collection) {
  * @return {Promise} Resolved with the beautified error message
  */
 function beautify(error, model, messages) {
-    var matches, indexName, rawValues, valueRegex;
-
     return new Promise(function (resolve, reject) {
-        // get index name from the error message
-        matches = errorRegex.exec(error.message);
+        // get the index name and duplicated values
+        // from the error message (with a hacky regex)
+        var matches = errorRegex.exec(error.message);
 
         if (!matches) {
             reject(new Error(
@@ -69,10 +68,31 @@ function beautify(error, model, messages) {
             return;
         }
 
-        indexName = matches[1], rawValues = matches[2].trim() + ',';
-        valueRegex = /\s*:\s*(\S*),/g;
+        var indexName = matches[1];
+        var valuesHash = matches[2].trim(), valuesList;
 
-        // look for the index contained in the MongoDB error
+        // values hash is a pseudo-JSON hash containing the values
+        // of the unique fields in the index, in which they keys are missing:
+        // { : "value of field 1", : "value of field 2" }
+        // we fix that by converting it to an array, then parsing it as JSON:
+        // ["value of field 1", "value of field 2"]
+        valuesHash = valuesHash.replace(/^\{ :/, '[');
+        valuesHash = valuesHash.replace(/\}$/, ']');
+        valuesHash = valuesHash.replace(/, :/, ',');
+
+        try {
+            valuesList = JSON.parse(valuesHash);
+        } catch (err) {
+            reject(new Error(
+                'mongoose-beautiful-unique-validation error: ' +
+                'cannot parse duplicated values to a meaningful value. ' +
+                'Parsing error: ' + err.message
+            ));
+            return;
+        }
+
+        // retrieve the index by name in the collection
+        // fail if we do not find such index
         getIndexes(model.collection).then(function (indexes) {
             var index = indexes[indexName];
 
@@ -87,30 +107,23 @@ function beautify(error, model, messages) {
 
             var createdError = new MongooseError.ValidationError(model);
 
-            // populate validation error with the index's fields
-            index.forEach(function (item) {
-                var value = valueRegex.exec(rawValues)[1],
-                    path = item[0], props;
-
-                // the value is parsed directly from the error
-                // string. We try to guess the value type (in a basic way)
-                if (value[0] === '"' || value[0] === "'") {
-                    value = value.substr(1, value.length - 2);
-                } else if (!isNaN(value)) {
-                    value = parseFloat(value);
-                }
-
-                props = {
+            // the index contains the field keys in the same order
+            // (hopefully) as in the original error message. Create a
+            // duplication error for each field in the index, using
+            // valuesList to get the duplicated values
+            index.forEach(function (item, i) {
+                var path = item[0];
+                var props = {
                     type: 'Duplicate value',
                     path: path,
-                    value: value
+                    value: valuesList[i]
                 };
 
                 if (typeof messages[path] === 'string') {
                     props.message = messages[path];
                 }
 
-                createdError.errors[item[0]] =
+                createdError.errors[path] =
                     new MongooseError.ValidatorError(props);
             });
 
