@@ -217,7 +217,7 @@ mongoose.connection.on('open', function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
-            assert.equal(err.errors.name.message, message, 'message should be our custom value');
+            assert.equal(err.errors['display name'].properties.path, 'display name', 'should keep the key with spaces');
             assert.end();
         });
     });
