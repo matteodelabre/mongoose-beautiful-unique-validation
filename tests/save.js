@@ -22,13 +22,14 @@ function makeUniqueName() {
  * @param {string} custom Custom unique validation message
  * @return {Model} Moongoose model
  */
-function makeModel(custom) {
-    var schema = new mongoose.Schema({
-        name: {
-            type: String,
-            unique: custom || true
-        }
-    });
+function makeModel(custom, fieldName) {
+    var fields = {};
+    fields[fieldName || 'name'] = {
+        type: String,
+        unique: custom || true
+    };
+
+    var schema = new mongoose.Schema(fields);
 
     schema.plugin(beautifulValidation);
     return mongoose.model(makeUniqueName(), schema);
@@ -179,6 +180,32 @@ mongoose.connection.on('open', function () {
 
         duplicateInst = new Model({
             name: name
+        });
+
+        originalInst.save().catch(function (err) {
+            assert.error(err, 'should save original instance successfully');
+            assert.end();
+        }).then(function () {
+            return duplicateInst.save();
+        }).then(function () {
+            assert.fail('should not save duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.equal(err.errors.name.message, message, 'message should be our custom value');
+            assert.end();
+        });
+    });
+
+    test('should work with spaces in field name', function (assert) {
+        var message = 'works!', Model = makeModel(message, 'display name'),
+            originalInst, duplicateInst, name = 'duptest';
+
+        originalInst = new Model({
+            'display name': name
+        });
+
+        duplicateInst = new Model({
+            'display name': name
         });
 
         originalInst.save().catch(function (err) {
