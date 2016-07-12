@@ -42,14 +42,14 @@ function uniqueString() {
  * @return {Model} Mongoose model
  */
 function makeModel(fieldNames, message) {
-    var schema;
+    var schema, fields = {};
 
     if (Array.isArray(fieldNames) && fieldNames.length > 1) {
         // if there is more than one field,
         // we create a compound index
-        var index = {}, fields = {};
+        var index = {};
 
-        fieldNames.forEach(fieldName => {
+        fieldNames.forEach(function (fieldName) {
             fields[fieldName] = String;
             index[fieldName] = 1;
         });
@@ -64,12 +64,12 @@ function makeModel(fieldNames, message) {
             fieldNames = fieldNames[0];
         }
 
-        schema = new mongoose.Schema({
-            [fieldNames]: {
-                type: String,
-                unique: message || true
-            }
-        });
+        fields[fieldNames] = {
+            type: String,
+            unique: message || true
+        };
+
+        schema = new mongoose.Schema(fields);
     }
 
     var modelName = uniqueString();
