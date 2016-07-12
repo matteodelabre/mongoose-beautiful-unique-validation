@@ -8,7 +8,7 @@ var beautifulValidation = require('../');
 
 // use global promise
 // see http://mongoosejs.com/docs/promises.html
-mongoose.Promise = global.Promise;
+mongoose.Promise = Promise;
 
 /**
  * Return a promise that is resolved
