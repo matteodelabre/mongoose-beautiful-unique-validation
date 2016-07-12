@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.0.2
+
+### Fixed bugs
+
+* Abandon parsing duplicated values using regexes and use
+JSON.parse for a more robust result. This allows duplicated
+values that contain spaces.
+
 ## v3.0.1
 
 ### Fixed bugs
