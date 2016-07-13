@@ -177,31 +177,27 @@ mongoose.connection.on('open', function () {
     });
 
     test('should work with spaces in field value', function (assert) {
-        var message = 'works!', Model = makeModel('name', message),
-            originalInst, duplicateInst, name = 'dup test';
+        var name = 'spaces in value', Model = makeModel('name');
 
-        originalInst = new Model({
+        // save the first instance
+        new Model({
             name: name
-        });
-
-        duplicateInst = new Model({
-            name: name
-        });
-
-        originalInst.save().catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
+        }).save().then(function () {
+            // ensure the unique index is rebuilt
+            return wait(500);
         }).then(function () {
-            return duplicateInst.save();
-        }).then(function () {
-            assert.fail('should not save duplicate successfully');
-            assert.end();
+            // try to save a duplicate (should not work)
+            new Model({
+                name: name
+            }).save().then(function () {
+                assert.fail('should not save duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.equal(err.errors.name.properties.value, name, 'should keep the value');
+                assert.end();
+            });
         }, function (err) {
-            assert.equal(err.errors.name.message, message, 'should have correct error message');
-            assert.end();
-        }).catch(function (err) {
-            console.error(err.stack);
-            assert.fail('correct error message not found');
+            assert.error(err, 'should save original instance successfully');
             assert.end();
         });
     });
