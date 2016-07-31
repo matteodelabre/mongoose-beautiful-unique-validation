@@ -218,7 +218,7 @@ module.exports = function (schema) {
         });
     };
 
-    schema.statics.update = function(conditions, doc, options, callback){
+    schema.statics.update = function (conditions, doc, options, callback) {
         var that = this;
 
         // default arguments
@@ -265,7 +265,7 @@ module.exports = function (schema) {
                 callback(null, raw);
             });
         });
-    }
+    };
 
 
     /**
