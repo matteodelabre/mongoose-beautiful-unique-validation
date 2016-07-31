@@ -2,6 +2,7 @@
 
 var MongooseError = require('mongoose/lib/error');
 var mongooseModelSave = require('mongoose/lib/model').prototype.save;
+var mongooseModelUpdate = require('mongoose/lib/model').update;
 var Promise = require('promise');
 
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup key:\s*(\{.*?\})/;
@@ -216,6 +217,56 @@ module.exports = function (schema) {
             });
         });
     };
+
+    schema.statics.update = function (conditions, doc, options, callback) {
+        var that = this;
+
+        // default arguments
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
+        }
+
+        if (options === undefined) {
+            options = {};
+        }
+
+        if (typeof callback !== 'function') {
+            callback = function () {};
+        }
+
+        var beautifyUnique = options.beautifyUnique !== false;
+
+        return new Promise(function (resolve, reject) {
+            mongooseModelUpdate.call(that, conditions, doc, options, function (err, raw) {
+                // we have a native E11000/11001 error, lets beautify it
+                if (isUniqueError(err) && beautifyUnique) {
+                    beautify(err, that, messages).then(function (beautifiedErr) {
+                        // successfully beautified the error
+                        reject(beautifiedErr);
+                        callback(beautifiedErr);
+                    }).catch(function (beautifyingErr) {
+                        // the error could not be beautified. Warn about
+                        // it and pass on the normal error
+                        console.warn(beautifyingErr);
+                        reject(err);
+                        callback(err);
+                    });
+                    return;
+                }
+
+                if (err) {
+                    reject(err);
+                    callback(err);
+                    return;
+                }
+
+                resolve(raw);
+                callback(null, raw);
+            });
+        });
+    };
+
 
     /**
      * Deprecated, use #save instead

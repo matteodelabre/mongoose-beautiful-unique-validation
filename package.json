@@ -9,7 +9,8 @@
     "url": "https://github.com/matteodelabre/mongoose-beautiful-unique-validation.git"
   },
   "scripts": {
-    "test": "tape tests/**/*.js | tap-spec"
+    "test": "tape tests/**/*.js | tap-spec",
+    "lint:fix": "eslint ./index.js --fix"
   },
   "engines": {
     "node": ">=0.10.0"
@@ -31,6 +32,7 @@
     "promise": "^7.1.1"
   },
   "devDependencies": {
+    "eslint": "^3.2.0",
     "kerberos": "0.0.19",
     "tap-spec": "^4.1.1",
     "tape": "^4.5.1"
