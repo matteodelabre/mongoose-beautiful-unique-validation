@@ -1,5 +1,15 @@
 # Changelog
 
+## v4.0.0
+
+### Breaking changes
+
+* Beautifies any kind of Mongoose field instead of passing
+along the original error when working with `ObjectId`s, `Buffer`s
+and `Date`s.
+
+* The `trySave()` method, deprecated in v3.0.0, is removed.
+
 ## v3.0.2
 
 ### Fixed bugs
