@@ -9,7 +9,7 @@
     "url": "https://github.com/matteodelabre/mongoose-beautiful-unique-validation.git"
   },
   "scripts": {
-    "test": "tape tests/**/*.js | tap-spec"
+    "test": "tape tests | tap-spec"
   },
   "engines": {
     "node": ">=0.10.0"
