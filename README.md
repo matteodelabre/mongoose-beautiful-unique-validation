@@ -132,8 +132,8 @@ doc.save({
 
 ## Supported versions
 
-The latest version of the module supports all of the following Node.js versions.
-If you find a bug while using one of the these versions, you can
+The latest version of this module supports all of the following Node.js versions.
+If you find a bug while using one of these versions, you can
 [fill a bug report](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
 and we will take care of it as soon as possible!
 
@@ -142,10 +142,6 @@ and we will take care of it as soon as possible!
 * 4.*
 * 0.12.*
 * 0.10.*
-
-## Contributing
-
-Check out the [contribution guide.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/CONTRIBUTING.md)
 
 ## License
 
