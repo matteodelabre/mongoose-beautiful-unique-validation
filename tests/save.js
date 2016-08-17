@@ -308,7 +308,7 @@ mongoose.connection.on('open', function () {
     });
 
     test('should work with all mongoose types', function (assert) {
-        var name = 'duplicate-test-all-types', Model = makeModel(
+        var Model = makeModel(
             ['name', 'group', 'age', 'date', 'blob', 'isVerified', 'list'],
             [String, mongoose.Schema.Types.ObjectId, Number, Date, Buffer, Boolean, []]
         ), document = {
@@ -333,11 +333,23 @@ mongoose.connection.on('open', function () {
             }, function (err) {
                 assert.ok(err, 'err should exist');
                 assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
-                assert.equal(err.errors.name.name, 'ValidatorError', 'inner err should be ValidatorError');
-                assert.equal(err.errors.name.kind, 'Duplicate value', 'kind of err should be Duplicate value');
-                assert.equal(err.errors.name.properties.path, 'name', 'err should be on the correct path');
-                assert.equal(err.errors.name.properties.type, 'Duplicate value');
-                assert.equal(err.errors.name.properties.value, name, 'err should contain the problematic value');
+
+                for (var key in document) {
+                    if (document.hasOwnProperty(key)) {
+                        assert.equal(err.errors[key].name, 'ValidatorError', 'inner err should be ValidatorError');
+                        assert.equal(err.errors[key].kind, 'Duplicate value', 'kind of err should be Duplicate value');
+                        assert.equal(err.errors[key].properties.path, key, 'err should be on the correct path');
+                        assert.equal(err.errors[key].properties.type, 'Duplicate value');
+
+                        var value = err.errors[key].properties.value;
+
+                        if (typeof value === 'object' && value !== null && value._bsontype === 'Binary') {
+                            value = value.buffer;
+                        }
+
+                        assert.looseEqual(value, document[key], 'err should contain the problematic value');
+                    }
+                }
 
                 assert.end();
             });
