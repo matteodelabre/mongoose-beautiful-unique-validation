@@ -196,19 +196,4 @@ module.exports = function (schema) {
             });
         });
     };
-
-    /**
-     * Deprecated, use #save instead
-     */
-    schema.methods.trySave = function (callback) {
-        // /!\ Deprecation warning
-        console.warn(
-            'mongoose-beautiful-unique-validation: Model#trySave() is ' +
-            'deprecated, use Model#save() instead. To disable ' +
-            'beautifying on plugged-in models, set the "beautifyUnique" ' +
-            'option to false in this function\'s arguments'
-        );
-
-        return this.save({}, callback);
-    };
 };
