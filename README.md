@@ -1,6 +1,6 @@
 # mongoose-beautiful-unique-validation
 
-Plug-in for Mongoose that turns duplicate errors into regular Mongoose validation errors.
+Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors.
 
 [![npm version](https://img.shields.io/npm/v/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
@@ -32,7 +32,7 @@ Unique constraint failures will be reported with this kind of error:
 
 This is not the same kind of error as normal [Validation](http://mongoosejs.com/docs/validation.html)
 errors: it will introduce more checks in your code if you want to handle them.
-This plug-in solves this problem by converting uniqueness errors (E11000 and E11001) into regular Validation errors.
+This plugin solves this problem by converting uniqueness errors (E11000 and E11001) into regular Validation errors.
 
 ```json
 {
@@ -114,7 +114,7 @@ By default, the `ValidatorError` message will be
 If you want to override it, add your custom message in the `unique` field (instead of `true`),
 during the schema's creation.
 
-This plug-in overrides the `.save()` method to add beautifying
+This plugin overrides the `.save()` method to add beautifying
 behavior. If you do not want it, you can pass the
 `beautifyUnique` option to `false`:
 
