@@ -119,7 +119,7 @@ behavior. If you do not want it, you can pass the
 `beautifyUnique` option to `false`:
 
 ```js
-document.save({
+doc.save({
     beautifyUnique: false
 }).then(() => {
     // stuff
