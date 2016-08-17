@@ -4,7 +4,7 @@ var MongooseError = require('mongoose/lib/error');
 var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
-var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup key:\s*(\{.*?\})/;
+var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
 
 /**
@@ -69,27 +69,7 @@ function beautify(error, model, messages) {
         }
 
         var indexName = matches[1];
-        var valuesHash = matches[2].trim(), valuesList;
-
-        // values hash is a pseudo-JSON hash containing the values
-        // of the unique fields in the index, in which they keys are missing:
-        // { : "value of field 1", : "value of field 2" }
-        // we fix that by converting it to an array, then parsing it as JSON:
-        // ["value of field 1", "value of field 2"]
-        valuesHash = valuesHash.replace(/^\{ :/, '[');
-        valuesHash = valuesHash.replace(/\}$/, ']');
-        valuesHash = valuesHash.replace(/, :/, ',');
-
-        try {
-            valuesList = JSON.parse(valuesHash);
-        } catch (err) {
-            reject(new Error(
-                'mongoose-beautiful-unique-validation error: ' +
-                'cannot parse duplicated values to a meaningful value. ' +
-                'Parsing error: ' + err.message
-            ));
-            return;
-        }
+        var valuesMap = error.getOperation() || {};
 
         // retrieve the index by name in the collection
         // fail if we do not find such index
@@ -111,12 +91,12 @@ function beautify(error, model, messages) {
             // (hopefully) as in the original error message. Create a
             // duplication error for each field in the index, using
             // valuesList to get the duplicated values
-            index.forEach(function (item, i) {
+            index.forEach(function (item) {
                 var path = item[0];
                 var props = {
                     type: 'Duplicate value',
                     path: path,
-                    value: valuesList[i]
+                    value: valuesMap[path]
                 };
 
                 if (typeof messages[path] === 'string') {
