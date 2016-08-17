@@ -322,12 +322,12 @@ mongoose.connection.on('open', function () {
         };
 
         // save the first instance
-        new Model(Object.assign({}, document)).save().then(function () {
+        new Model(document).save().then(function () {
             // ensure the unique index is rebuilt
             return wait(500);
         }).then(function () {
             // try to save a duplicate (should not work)
-            new Model(Object.assign({}, document)).save().then(function () {
+            new Model(document).save().then(function () {
                 assert.fail('should not save duplicate successfully');
                 assert.end();
             }, function (err) {
