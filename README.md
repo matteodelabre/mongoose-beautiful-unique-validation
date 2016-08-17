@@ -1,13 +1,15 @@
 # mongoose-beautiful-unique-validation
 
-Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors.
+Plugin for Mongoose that turns duplicate errors into regular Mongoose
+validation errors.
 
 [![npm version](https://img.shields.io/npm/v/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![npm downloads](https://img.shields.io/npm/dm/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-beautiful-unique-validation)
 [![build status](https://img.shields.io/travis/matteodelabre/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://travis-ci.org/matteodelabre/mongoose-beautiful-unique-validation)
 [![dependencies status](http://img.shields.io/david/matteodelabre/mongoose-beautiful-unique-validation.svg?style=flat-square)](https://david-dm.org/matteodelabre/mongoose-beautiful-unique-validation)
 
-Mongoose's unique constraint actually relies on MongoDB's `unique` indexes. It means that, if you have a schema like that one:
+Mongoose's unicity constraint actually relies on MongoDB's `unique` indexes.
+It means that, if you have a schema like this one:
 
 ```js
 mongoose.Schema({
@@ -18,7 +20,7 @@ mongoose.Schema({
 });
 ```
 
-Unique constraint failures will be reported with this kind of error:
+Duplicates will be reported with this kind of error:
 
 ```json
 {
@@ -30,9 +32,11 @@ Unique constraint failures will be reported with this kind of error:
 }
 ```
 
-This is not the same kind of error as normal [Validation](http://mongoosejs.com/docs/validation.html)
-errors: it will introduce more checks in your code if you want to handle them.
-This plugin solves this problem by converting uniqueness errors (E11000 and E11001) into regular Validation errors.
+This is not the same kind of error as normal
+[Validation](http://mongoosejs.com/docs/validation.html) errors, so you need
+to handle that as a special case―and special cases allow room for bugs.
+This plugin solves this problem by converting driver-level duplicate errors
+(E11000 and E11001) into regular Validation errors.
 
 ```json
 {
@@ -111,8 +115,8 @@ indexes on the schema, otherwise they will not be beautified.**
 
 By default, the `ValidatorError` message will be
 `Validator failed for path xxx with value xxx`.
-If you want to override it, add your custom message in the `unique` field (instead of `true`),
-during the schema's creation.
+If you want to override it, add your custom message in the `unique`
+field (instead of `true`), during the schema's creation.
 
 This plugin overrides the `.save()` method to add beautifying
 behavior. If you do not want it, you can pass the
@@ -126,10 +130,24 @@ doc.save({
 });
 ```
 
+## Supported versions
+
+The latest version of the module supports all of the following Node.js versions.
+If you find a bug while using one of the these versions, you can
+[fill a bug report](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
+and we will take care of it as soon as possible!
+
+* 6.*
+* 5.*
+* 4.*
+* 0.12.*
+* 0.10.*
+
 ## Contributing
 
 Check out the [contribution guide.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/CONTRIBUTING.md)
 
 ## License
 
-See the [LICENSE.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/LICENSE)
+Released under the MIT license.  
+[See the full license text.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/LICENSE)
