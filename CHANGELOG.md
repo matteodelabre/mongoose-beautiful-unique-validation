@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.0.1
+
+### Fixed bugs
+
+* Remove unwanted logging statement.
+* Throw an error if this module is used with an outdated Mongoose version.
+
 ## v5.0.0
 
 ### Breaking changes
