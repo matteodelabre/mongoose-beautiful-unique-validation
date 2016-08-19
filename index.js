@@ -150,7 +150,6 @@ module.exports = function (schema) {
                 next(error);
             });
         } else {
-            console.log(error, doc, next);
             // otherwise, just pass on the error
             next(error);
         }
