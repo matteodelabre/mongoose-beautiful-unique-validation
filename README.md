@@ -35,7 +35,7 @@ Duplicates will be reported with this kind of error:
 This is not the same kind of error as normal
 [Validation](http://mongoosejs.com/docs/validation.html) errors, so you need
 to handle that as a special case―and special cases allow room for bugs.
-This plugin solves this problem by converting driver-level duplicate errors
+This plugin solves this problem by turning driver-level duplicate errors
 (E11000 and E11001) into regular Validation errors.
 
 ```json
@@ -65,6 +65,21 @@ This plugin solves this problem by converting driver-level duplicate errors
 ```sh
 npm install --save mongoose-beautiful-unique-validation
 ```
+
+### Supported versions of Mongoose
+
+The 5.0.0 versions of this module only support
+Mongoose 4.5.0 and upper.
+If you need to use previous versions of
+Mongoose, use the 4.0.0 versions.
+
+### Supported versions of Node
+
+The latest version of this module supports Node.js
+version `6.*`, `5.*`, `4.*`, `0.12.*` and `0.10.*`.
+If you find a bug while using one of these versions, you can
+[fill a bug report](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
+and we will take care of it as soon as possible!
 
 ## Example
 
@@ -108,7 +123,8 @@ admin2.save()
 ## Usage
 
 Schemata that will produce beautified errors need to be plugged
-in with this module using the `.plugin()` method.
+in with this module using the `.plugin()` method. You can also
+use it as a [global plugin.](http://mongoosejs.com/docs/plugins.html#global)
 
 **You need to plug in this module after declaring all
 indexes on the schema, otherwise they will not be beautified.**
@@ -117,31 +133,6 @@ By default, the `ValidatorError` message will be
 `Validator failed for path xxx with value xxx`.
 If you want to override it, add your custom message in the `unique`
 field (instead of `true`), during the schema's creation.
-
-This plugin overrides the `.save()` method to add beautifying
-behavior. If you do not want it, you can pass the
-`beautifyUnique` option to `false`:
-
-```js
-doc.save({
-    beautifyUnique: false
-}).then(() => {
-    // stuff
-});
-```
-
-## Supported versions
-
-The latest version of this module supports all of the following Node.js versions.
-If you find a bug while using one of these versions, you can
-[fill a bug report](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
-and we will take care of it as soon as possible!
-
-* 6.*
-* 5.*
-* 4.*
-* 0.12.*
-* 0.10.*
 
 ## License
 

@@ -6,55 +6,7 @@ var Schema = mongoose.Schema;
 var assertDuplicateFailure = require('./utils').assertDuplicateFailure;
 var beautifulValidation = require('../');
 
-test('should save documents', function (assert) {
-    var NormalSaveSchema = new Schema({
-        name: String
-    });
-
-    NormalSaveSchema.plugin(beautifulValidation);
-
-    var NormalSave = mongoose.model('NormalSave', NormalSaveSchema);
-    var instance = new NormalSave({
-        name: 'Test for Normal Save'
-    });
-
-    instance.save(function (saveError) {
-        assert.error(saveError, 'should save an instance successfully');
-
-        NormalSave.find({
-            name: 'Test for Normal Save'
-        }, function (findError, result) {
-            assert.error(findError, 'should find back the saved instance');
-            assert.looseEqual(result[0].name, 'Test for Normal Save', 'should keep the document intact');
-            assert.end();
-        });
-    });
-});
-
-test('should provide a promise', function (assert) {
-    var PromiseSaveSchema = new Schema({
-        name: String
-    });
-
-    PromiseSaveSchema.plugin(beautifulValidation);
-
-    var PromiseSave = mongoose.model('PromiseSave', PromiseSaveSchema);
-    var instance = new PromiseSave({
-        name: 'Test for Promise Save'
-    });
-
-    instance.save().then(function () {
-        PromiseSave.find({
-            name: 'Test for Promise Save'
-        }, function (findError, result) {
-            assert.error(findError, 'should find back the saved instance');
-            assert.looseEqual(result[0].name, 'Test for Promise Save', 'should keep the document intact');
-            assert.end();
-        });
-    }).catch(function (error) {
-        assert.error(error, 'should save an instance successfully');
-    });
-});
+mongoose.plugin(beautifulValidation);
 
 test('should report duplicates', function (assert) {
     var DuplicateSchema = new Schema({
@@ -64,10 +16,28 @@ test('should report duplicates', function (assert) {
         }
     });
 
-    DuplicateSchema.plugin(beautifulValidation);
     var Duplicate = mongoose.model('Duplicate', DuplicateSchema);
 
-    assertDuplicateFailure(assert, Duplicate, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Duplicate(doc).save();
+    }, {
+        address: '123 Fake St.'
+    });
+});
+
+test('should report duplicates with Model.create()', function (assert) {
+    var CreateSchema = new Schema({
+        address: {
+            type: String,
+            unique: true
+        }
+    });
+
+    var Create = mongoose.model('Create', CreateSchema);
+
+    assertDuplicateFailure(assert, function (doc) {
+        return Create.create(doc);
+    }, {
         address: '123 Fake St.'
     });
 });
@@ -80,10 +50,11 @@ test('should report duplicates on fields containing spaces', function (assert) {
         }
     });
 
-    SpacesSchema.plugin(beautifulValidation);
     var Spaces = mongoose.model('Spaces', SpacesSchema);
 
-    assertDuplicateFailure(assert, Spaces, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Spaces(doc).save();
+    }, {
         'display name': 'Testing display names'
     });
 });
@@ -101,10 +72,11 @@ test('should report duplicates on compound indexes', function (assert) {
         unique: true
     });
 
-    CompoundSchema.plugin(beautifulValidation);
     var Compound = mongoose.model('Compound', CompoundSchema);
 
-    assertDuplicateFailure(assert, Compound, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Compound(doc).save();
+    }, {
         name: 'John Doe',
         age: 42
     });
@@ -118,10 +90,11 @@ test('should report duplicates with the custom validation message', function (as
         }
     });
 
-    MessageSchema.plugin(beautifulValidation);
     var Message = mongoose.model('Message', MessageSchema);
 
-    assertDuplicateFailure(assert, Message, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Message(doc).save();
+    }, {
         address: '123 Fake St.'
     }, 'this is our custom message!');
 });
@@ -139,10 +112,11 @@ test('should report duplicates on compound indexes with the custom validation me
         unique: 'yet another custom message'
     });
 
-    CompoundMessageSchema.plugin(beautifulValidation);
     var CompoundMessage = mongoose.model('CompoundMessage', CompoundMessageSchema);
 
-    assertDuplicateFailure(assert, CompoundMessage, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new CompoundMessage(doc).save();
+    }, {
         name: 'John Doe',
         age: 42
     }, 'yet another custom message');
@@ -171,10 +145,11 @@ test('should report duplicates on any mongoose type', function (assert) {
         unique: true
     });
 
-    AnyTypeSchema.plugin(beautifulValidation);
     var AnyType = mongoose.model('AnyType', AnyTypeSchema);
 
-    assertDuplicateFailure(assert, AnyType, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new AnyType(doc).save();
+    }, {
         name: 'test',
         group: new mongoose.Types.ObjectId,
         age: 42,
