@@ -18,7 +18,9 @@ test('should report duplicates', function (assert) {
 
     var Duplicate = mongoose.model('Duplicate', DuplicateSchema);
 
-    assertDuplicateFailure(assert, Duplicate, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Duplicate(doc).save();
+    }, {
         address: '123 Fake St.'
     });
 });
@@ -33,10 +35,10 @@ test('should report duplicates with Model.create()', function (assert) {
 
     var Create = mongoose.model('Create', CreateSchema);
 
-    assertDuplicateFailure(assert, Create, {
-        address: '123 Fake St.'
-    }, undefined, function (doc) {
+    assertDuplicateFailure(assert, function (doc) {
         return Create.create(doc);
+    }, {
+        address: '123 Fake St.'
     });
 });
 
@@ -50,7 +52,9 @@ test('should report duplicates on fields containing spaces', function (assert) {
 
     var Spaces = mongoose.model('Spaces', SpacesSchema);
 
-    assertDuplicateFailure(assert, Spaces, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Spaces(doc).save();
+    }, {
         'display name': 'Testing display names'
     });
 });
@@ -70,7 +74,9 @@ test('should report duplicates on compound indexes', function (assert) {
 
     var Compound = mongoose.model('Compound', CompoundSchema);
 
-    assertDuplicateFailure(assert, Compound, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Compound(doc).save();
+    }, {
         name: 'John Doe',
         age: 42
     });
@@ -86,7 +92,9 @@ test('should report duplicates with the custom validation message', function (as
 
     var Message = mongoose.model('Message', MessageSchema);
 
-    assertDuplicateFailure(assert, Message, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new Message(doc).save();
+    }, {
         address: '123 Fake St.'
     }, 'this is our custom message!');
 });
@@ -106,7 +114,9 @@ test('should report duplicates on compound indexes with the custom validation me
 
     var CompoundMessage = mongoose.model('CompoundMessage', CompoundMessageSchema);
 
-    assertDuplicateFailure(assert, CompoundMessage, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new CompoundMessage(doc).save();
+    }, {
         name: 'John Doe',
         age: 42
     }, 'yet another custom message');
@@ -137,7 +147,9 @@ test('should report duplicates on any mongoose type', function (assert) {
 
     var AnyType = mongoose.model('AnyType', AnyTypeSchema);
 
-    assertDuplicateFailure(assert, AnyType, {
+    assertDuplicateFailure(assert, function (doc) {
+        return new AnyType(doc).save();
+    }, {
         name: 'test',
         group: new mongoose.Types.ObjectId,
         age: 42,
