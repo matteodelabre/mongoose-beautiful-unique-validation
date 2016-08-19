@@ -1,7 +1,6 @@
 'use strict';
 
 var MongooseError = require('mongoose/lib/error');
-var mongooseModelSave = require('mongoose/lib/model').prototype.save;
 var Promise = require('promise');
 
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
@@ -49,11 +48,11 @@ function getIndexes(collection) {
  * by turning it into a validation error
  *
  * @param {MongoError} err Error to process
- * @param {Object} model Model associated to the document
+ * @param {NativeCollection} collection Collection associated to the document
  * @param {Object} messages Map fields to unique error messages
  * @return {Promise} Resolved with the beautified error message
  */
-function beautify(error, model, messages) {
+function beautify(error, collection, messages) {
     return new Promise(function (resolve, reject) {
         // get the index name and duplicated values
         // from the error message (with a hacky regex)
@@ -73,7 +72,7 @@ function beautify(error, model, messages) {
 
         // retrieve the index by name in the collection
         // fail if we do not find such index
-        getIndexes(model.collection).then(function (indexes) {
+        getIndexes(collection).then(function (indexes) {
             var index = indexes[indexName];
 
             if (!index) {
@@ -85,7 +84,7 @@ function beautify(error, model, messages) {
                 return;
             }
 
-            var createdError = new MongooseError.ValidationError(model);
+            var createdError = new MongooseError.ValidationError();
 
             // the index contains the field keys in the same order
             // (hopefully) as in the original error message. Create a
@@ -136,64 +135,24 @@ module.exports = function (schema) {
         }
     });
 
-    /**
-     * Save the schema in the database, beautify any
-     * unique error produced in the process
-     *
-     * @param {Object} [options] Options for #save
-     * @param {bool} [options.safe] Overrides schema's safe option
-     * @param {bool} [options.validateBeforeSave] Set to false to save without validating
-     * @param {bool} [options.beautifyUnique] Set to false to disable beautifying unique errors
-     * @param {function} [callback] Callback called with any error and the document
-     * @return {Promise} If no callback was provided, resolved with the
-     * document and fails if any error was produced
-     */
-    schema.methods.save = function (options, callback) {
-        var that = this;
-
-        // default arguments
-        if (typeof options === 'function') {
-            callback = options;
-            options = {};
-        }
-
-        if (options === undefined) {
-            options = {};
-        }
-
-        if (typeof callback !== 'function') {
-            callback = function () {};
-        }
-
-        var beautifyUnique = options.beautifyUnique !== false;
-
-        return new Promise(function (resolve, reject) {
-            mongooseModelSave.call(that, options, function (err, document, numAffected) {
-                // we have a native E11000/11001 error, lets beautify it
-                if (isUniqueError(err) && beautifyUnique) {
-                    beautify(err, that, messages).then(function (beautifiedErr) {
-                        // successfully beautified the error
-                        reject(beautifiedErr);
-                        callback(beautifiedErr);
-                    }).catch(function (beautifyingErr) {
-                        // the error could not be beautified. Warn about
-                        // it and pass on the normal error
-                        console.warn(beautifyingErr);
-                        reject(err);
-                        callback(err);
-                    });
-                    return;
-                }
-
-                if (err) {
-                    reject(err);
-                    callback(err);
-                    return;
-                }
-
-                resolve(document);
-                callback(null, document, numAffected);
+    // this hook gets called after any save operation by Mongoose
+    // and filters unique errors
+    schema.post('save', function (error, doc, next) {
+        if (isUniqueError(error)) {
+            // we have a native E11000/11001 error, lets beautify it
+            beautify(error, doc.collection, messages).then(function (beautifulError) {
+                // successfully beautified the error
+                next(beautifulError);
+            }).catch(function (beautifyingErr) {
+                // the error could not be beautified. Warn about
+                // it and pass on the normal error
+                console.warn(beautifyingErr);
+                next(error);
             });
-        });
-    };
+        } else {
+            console.log(error, doc, next);
+            // otherwise, just pass on the error
+            next(error);
+        }
+    });
 };

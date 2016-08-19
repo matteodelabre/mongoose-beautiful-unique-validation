@@ -13,14 +13,23 @@ function wait(time) {
     });
 }
 
-function assertDuplicateFailure(assert, Model, doc, message) {
+/**
+ * Assert that saving the given document twice
+ * produces a beautified error
+ *
+ * @param {Object} assert Tape assertion object
+ * @param {function} creator Callback to create a document
+ * @param {Object} doc The document to use
+ * @param {string} [message] Also check that the given message is passed over
+ */
+function assertDuplicateFailure(assert, creator, doc, message) {
     // save the first instance
-    new Model(doc).save().then(function () {
+    creator(doc).then(function () {
         // ensure the unique index is rebuilt
         return wait(500);
     }).then(function () {
         // try to save a duplicate (should not work)
-        new Model(doc).save().then(function () {
+        creator(doc).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
@@ -40,7 +49,7 @@ function assertDuplicateFailure(assert, Model, doc, message) {
                 assert.equal(error.kind, 'Duplicate value', 'kind of err should be Duplicate value');
 
                 // check that our custom error message was passed down, if asked
-                if (message !== undefined) {
+                if (message) {
                     assert.equal(error.message, message, 'message should be our custom value');
                 }
 
