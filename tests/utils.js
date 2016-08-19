@@ -13,14 +13,21 @@ function wait(time) {
     });
 }
 
-function assertDuplicateFailure(assert, Model, doc, message) {
+function assertDuplicateFailure(assert, Model, doc, message, creator) {
+    // by default, we create the models using "new Model()"
+    if (typeof creator !== 'function') {
+        creator = function (args) {
+            return new Model(args).save();
+        };
+    }
+
     // save the first instance
-    new Model(doc).save().then(function () {
+    creator(doc).then(function () {
         // ensure the unique index is rebuilt
         return wait(500);
     }).then(function () {
         // try to save a duplicate (should not work)
-        new Model(doc).save().then(function () {
+        creator(doc).then(function () {
             assert.fail('should not save duplicate successfully');
             assert.end();
         }, function (err) {
@@ -40,7 +47,7 @@ function assertDuplicateFailure(assert, Model, doc, message) {
                 assert.equal(error.kind, 'Duplicate value', 'kind of err should be Duplicate value');
 
                 // check that our custom error message was passed down, if asked
-                if (message !== undefined) {
+                if (message) {
                     assert.equal(error.message, message, 'message should be our custom value');
                 }
 
