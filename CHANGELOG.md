@@ -1,5 +1,17 @@
 # Changelog
 
+## v5.0.0
+
+### Breaking changes
+
+* Beautifies the errors using an error middleware instead of overriding
+the `#save()` method. **Only supports Mongoose 4.5.0 and onwards.**
+
+### New features
+
+* Also works on all other ways of saving models, not only `#save()`
+(including `Model.create()`).
+
 ## v4.0.0
 
 ### Breaking changes
