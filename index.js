@@ -138,6 +138,18 @@ module.exports = function (schema) {
     // this hook gets called after any save operation by Mongoose
     // and filters unique errors
     schema.post('save', function (error, doc, next) {
+        // if the next() function is missing, this might by
+        // a sign that we use an outdated Mongoose
+        if (typeof next !== 'function') {
+            throw new Error(
+                'mongoose-beautiful-unique-validation error: ' +
+                'The hook was called incorrectly. Double check that ' +
+                'you are using mongoose@>=4.5.0; if you need to use ' +
+                'an outdated Mongoose version, please install this module ' +
+                'in version 4.0.0'
+            );
+        }
+
         if (isUniqueError(error)) {
             // we have a native E11000/11001 error, lets beautify it
             beautify(error, doc.collection, messages).then(function (beautifulError) {
