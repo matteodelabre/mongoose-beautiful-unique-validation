@@ -66,4 +66,5 @@ function assertDuplicateFailure(assert, creator, doc, message) {
     });
 }
 
+exports.wait = wait;
 exports.assertDuplicateFailure = assertDuplicateFailure;

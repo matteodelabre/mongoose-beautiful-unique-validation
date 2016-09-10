@@ -3,7 +3,9 @@
 var test = require('tape');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var assertDuplicateFailure = require('./utils').assertDuplicateFailure;
+var utils = require('./utils');
+var assertDuplicateFailure = utils.assertDuplicateFailure;
+var wait = utils.wait;
 var beautifulValidation = require('../');
 
 mongoose.plugin(beautifulValidation);
@@ -39,6 +41,49 @@ test('should report duplicates with Model.create()', function (assert) {
         return Create.create(doc);
     }, {
         address: '123 Fake St.'
+    });
+});
+
+test('should report duplicates with Model.findOneAndUpdate()', function (assert) {
+    var FoauSchema = new Schema({
+        address: {
+            type: String,
+            unique: true
+        }
+    });
+
+    var Foau = mongoose.model('Foau', FoauSchema);
+
+    // create an initial instance
+    new Foau({
+        address: '123 Fake St.'
+    }).save().then(function () {
+        return wait(500);
+    }).then(function () {
+        // save another document that does not violate the unique constraint
+        new Foau({
+            address: '321 Fake St.'
+        }).save().then(function () {
+            return wait(500);
+        }).then(function () {
+            // find the non-duplicate document and update it to become a dup
+            Foau.findOneAndUpdate({
+                address: '321 Fake St.'
+            }, {
+                address: '123 Fake St.'
+            }).exec().then(function () {
+                console.log(arguments);
+                assert.fail('should not update duplicate successfully');
+                assert.end();
+            }, function (err) {
+                assert.ok(err, 'err should exist');
+                assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+                assert.end();
+            });
+        });
+    }, function (err) {
+        assert.error(err, 'should save original instance successfully');
+        assert.end();
     });
 });
 
