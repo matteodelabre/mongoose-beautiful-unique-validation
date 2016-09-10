@@ -134,6 +134,10 @@ By default, the `ValidatorError` message will be
 If you want to override it, add your custom message in the `unique`
 field (instead of `true`), during the schema's creation.
 
+The error's `errors` property contain a list of all original
+values that made the contraint fail. This property is not
+filled in when using `findOneAndUpdate`.
+
 ## License
 
 Released under the MIT license.  
