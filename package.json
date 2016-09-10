@@ -1,7 +1,7 @@
 {
   "name": "mongoose-beautiful-unique-validation",
   "description": "Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "license": "MIT",
   "main": "index.js",
   "repository": {

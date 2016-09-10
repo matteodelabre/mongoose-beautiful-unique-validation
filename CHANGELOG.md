@@ -1,5 +1,11 @@
 # Changelog
 
+## v5.1.0
+
+### New features
+
+* Also works with `#findOneAndUpdate` (but does not provide failing paths info).
+
 ## v5.0.1
 
 ### Fixed bugs
