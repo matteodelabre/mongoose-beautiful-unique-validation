@@ -83,6 +83,8 @@ and we will take care of it as soon as possible!
 
 ## Example
 
+### Saving a duplicate document
+
 ```js
 let beautifyUnique = require('mongoose-beautiful-unique-validation');
 let userSchema = mongoose.Schema({
@@ -118,6 +120,51 @@ admin2.save()
 // will print:
 // Success saving admin1!
 // admin2 could not be saved: [ValidationError: User validation failed]
+```
+
+### Updating a document to be a duplicate
+
+```js
+let beautifyUnique = require('mongoose-beautiful-unique-validation');
+let userSchema = mongoose.Schema({
+    name: {
+        type: String,
+        // this will be the uniqueness error message
+        // leave it to "true" to keep the default one:
+        unique: 'Two users cannot share the same username'
+    }
+});
+
+// enables beautifying
+userSchema.plugin(beautifyUnique);
+
+// let's create two documents
+let User = mongoose.model('Model', userSchema);
+let admin1 = new User({
+    name: 'admin1'
+});
+
+let admin2 = new User({
+    name: 'admin2'
+});
+
+// first, save both documents
+Promise.all([
+    admin1.save(),
+    admin2.save()
+]).then(() => {
+    // try to update admin2 so that it is a duplicate of admin1
+    admin2
+        .update({
+            $set: {name: 'admin1'}
+        })
+        .exec()
+        .then(() => console.log('Success updating admin2!'))
+        .catch(err => console.error('admin2 could not be updated: ', err))
+}).catch(err => console.error('admin1/admin2 could not be saved: ', err));
+
+// will print:
+// admin2 could not be updated: [ValidationError: User validation failed]
 ```
 
 ## Usage
