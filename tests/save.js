@@ -12,6 +12,15 @@ mongoose.plugin(beautifulValidation);
 
 test('should report duplicates', function (assert) {
     var DuplicateSchema = new Schema({
+        name: {
+            type: String,
+            unique: true
+        },
+
+        age: {
+            type: Number
+        },
+
         address: {
             type: String,
             unique: true
@@ -23,12 +32,27 @@ test('should report duplicates', function (assert) {
     assertDuplicateFailure(assert, function (doc) {
         return new Duplicate(doc).save();
     }, {
+        name: 'John Doe',
+        age: 13,
         address: '123 Fake St.'
-    });
+    }, {
+        name: 'Jane Doe',
+        age: 13,
+        address: '123 Fake St.'
+    }, ['address']);
 });
 
 test('should report duplicates with Model.create()', function (assert) {
     var CreateSchema = new Schema({
+        name: {
+            type: String,
+            unique: true
+        },
+
+        age: {
+            type: Number
+        },
+
         address: {
             type: String,
             unique: true
@@ -40,8 +64,14 @@ test('should report duplicates with Model.create()', function (assert) {
     assertDuplicateFailure(assert, function (doc) {
         return Create.create(doc);
     }, {
+        name: 'John Doe',
+        age: 13,
         address: '123 Fake St.'
-    });
+    }, {
+        name: 'Jane Doe',
+        age: 13,
+        address: '123 Fake St.'
+    }, ['address']);
 });
 
 test('should report duplicates with Model.findOneAndUpdate()', function (assert) {
@@ -101,7 +131,9 @@ test('should report duplicates on fields containing spaces', function (assert) {
         return new Spaces(doc).save();
     }, {
         'display name': 'Testing display names'
-    });
+    }, {
+        'display name': 'Testing display names'
+    }, ['display name']);
 });
 
 test('should report duplicates on compound indexes', function (assert) {
@@ -124,7 +156,10 @@ test('should report duplicates on compound indexes', function (assert) {
     }, {
         name: 'John Doe',
         age: 42
-    });
+    }, {
+        name: 'John Doe',
+        age: 42
+    }, ['name', 'age']);
 });
 
 test('should report duplicates with the custom validation message', function (assert) {
@@ -141,7 +176,9 @@ test('should report duplicates with the custom validation message', function (as
         return new Message(doc).save();
     }, {
         address: '123 Fake St.'
-    }, 'this is our custom message!');
+    }, {
+        address: '123 Fake St.'
+    }, ['address'], 'this is our custom message!');
 });
 
 test('should report duplicates on compound indexes with the custom validation message', function (assert) {
@@ -164,7 +201,10 @@ test('should report duplicates on compound indexes with the custom validation me
     }, {
         name: 'John Doe',
         age: 42
-    }, 'yet another custom message');
+    }, {
+        name: 'John Doe',
+        age: 42
+    }, ['name', 'age'], 'yet another custom message');
 });
 
 test('should report duplicates on any mongoose type', function (assert) {
@@ -202,5 +242,13 @@ test('should report duplicates on any mongoose type', function (assert) {
         blob: new Buffer('abc'),
         isVerified: false,
         list: [1, 2, 3]
-    });
+    }, {
+        name: 'test',
+        group: new mongoose.Types.ObjectId,
+        age: 42,
+        date: new Date,
+        blob: new Buffer('abc'),
+        isVerified: false,
+        list: [1, 2, 3]
+    }, ['name', 'group', 'age', 'date', 'blob', 'isVerified', 'list']);
 });
