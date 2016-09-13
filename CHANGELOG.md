@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.1.1
+
+### Fixed bugs
+
+* Fixed a bug where all fields of a Schema are reported as duplicated
+even when only some of them are (bug #29).
+
 ## v5.1.0
 
 ### New features
