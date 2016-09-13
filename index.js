@@ -1,6 +1,10 @@
 'use strict';
 
 var MongooseError = require('mongoose/lib/error');
+var Promise = require('promise');
+
+var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
+var indexesCache = {};
 
 /**
  * Check if given error is an unique error
@@ -14,42 +18,89 @@ function isUniqueError(err) {
 }
 
 /**
+ * Retrieve index information using collection#indexInformation
+ * or previously cached data
+ *
+ * @param {Object} collection Mongoose collection
+ * @return {Promise} Resolved with index information data
+ */
+function getIndexes(collection) {
+    return new Promise(function (resolve, reject) {
+        if (indexesCache[collection.name]) {
+            resolve(indexesCache[collection.name]);
+            return;
+        }
+
+        collection.indexInformation(function (dbErr, indexes) {
+            if (dbErr) {
+                reject(dbErr);
+                return;
+            }
+
+            indexesCache[collection.name] = indexes;
+            resolve(indexes);
+        });
+    });
+}
+
+/**
  * Beautify an E11000 or 11001 (unique constraint fail) Mongo error
  * by turning it into a validation error
  *
  * @param {MongoError} err Error to process
+ * @param {Document} doc The duplicated document
  * @param {Object} messages Map fields to unique error messages
- * @return {ValidationError} Beautified error message
+ * @return {Promise.<ValidationError>} Beautified error message
  */
-function beautify(error, messages) {
-    var valuesMap = ('getOperation' in error) ? error.getOperation() : {};
-    var createdError = new MongooseError.ValidationError();
+function beautify(error, doc, messages) {
+    // recover the list of duplicated fields. Only available if the
+    // driver provides access to the original collection (for retrieving
+    // the duplicated index's fields)
+    var next = Promise.resolve({});
 
-    // the index contains the field keys in the same order
-    // (hopefully) as in the original error message. Create a
-    // duplication error for each field in the index, using
-    // valuesMap to get the duplicated values
-    Object.keys(valuesMap).forEach(function (path) {
-        // ignore Mongoose internals
-        if (path.slice(0, 2) === '__') {
-            return;
+    if ('collection' in doc) {
+        var collection = doc.collection;
+
+        // extract the failed duplicate index's name from the
+        // from the error message (with a hacky regex)
+        var matches = errorRegex.exec(error.message);
+
+        if (matches) {
+            var indexName = matches[1];
+
+            // retrieve that index's list of fields
+            next = getIndexes(collection).then(function (indexes) {
+                var suberrors = {};
+
+                // create a suberror per duplicated field
+                if (indexName in indexes) {
+                    indexes[indexName].forEach(function (field) {
+                        var path = field[0];
+                        var props = {
+                            type: 'Duplicate value',
+                            path: path,
+                            value: doc[path]
+                        };
+
+                        if (typeof messages[path] === 'string') {
+                            props.message = messages[path];
+                        }
+
+                        suberrors[path] = new MongooseError.ValidatorError(props);
+                    });
+                }
+
+                return suberrors;
+            });
         }
+    }
 
-        var props = {
-            type: 'Duplicate value',
-            path: path,
-            value: valuesMap[path]
-        };
+    return next.then(function (suberrors) {
+        var beautifiedError = new MongooseError.ValidationError();
 
-        if (typeof messages[path] === 'string') {
-            props.message = messages[path];
-        }
-
-        createdError.errors[path] =
-            new MongooseError.ValidatorError(props);
+        beautifiedError.errors = suberrors;
+        return beautifiedError;
     });
-
-    return createdError;
 }
 
 module.exports = function (schema) {
@@ -93,7 +144,16 @@ module.exports = function (schema) {
 
         if (isUniqueError(error)) {
             // beautify unicity constraint failure errors
-            next(beautify(error, messages));
+            beautify(error, doc, messages)
+                .then(next)
+                .catch(function (beautifyError) {
+                    setTimeout(function () {
+                        throw new Error(
+                            'mongoose-beautiful-unique-validation error: ' +
+                            beautifyError.stack
+                        );
+                    });
+                });
         } else {
             // pass over normal errors
             next(error);
