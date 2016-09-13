@@ -218,6 +218,16 @@ test('should report duplicates on any mongoose type', function (assert) {
         list: []
     });
 
+    var values = {
+        name: 'test',
+        group: new mongoose.Types.ObjectId,
+        age: 42,
+        date: new Date,
+        blob: new Buffer('abc'),
+        isVerified: false,
+        list: [1, 2, 3]
+    };
+
     AnyTypeSchema.index({
         name: 1,
         group: 1,
@@ -234,21 +244,8 @@ test('should report duplicates on any mongoose type', function (assert) {
 
     assertDuplicateFailure(assert, function (doc) {
         return new AnyType(doc).save();
-    }, {
-        name: 'test',
-        group: new mongoose.Types.ObjectId,
-        age: 42,
-        date: new Date,
-        blob: new Buffer('abc'),
-        isVerified: false,
-        list: [1, 2, 3]
-    }, {
-        name: 'test',
-        group: new mongoose.Types.ObjectId,
-        age: 42,
-        date: new Date,
-        blob: new Buffer('abc'),
-        isVerified: false,
-        list: [1, 2, 3]
-    }, ['name', 'group', 'age', 'date', 'blob', 'isVerified', 'list']);
+    }, values, values, [
+        'name', 'group', 'age', 'date',
+        'blob', 'isVerified', 'list'
+    ]);
 });

@@ -56,14 +56,8 @@ function assertDuplicateFailure(assert, creator, doc1, doc2, dups, message) {
                 assert.equal(suberr.message, message, 'each sub-error should carry over the custom message');
             }
 
-            var value = suberr.properties.value;
-
             // with buffer values, only compare the inner "buffer" property
-            if (typeof value === 'object' && value !== null && value._bsontype === 'Binary') {
-                value = value.buffer;
-            }
-
-            assert.looseEqual(value, doc2[key], 'the sub-error should contain the duplicated value');
+            assert.equal(suberr.properties.value.toString(), doc2[key].toString(), 'the sub-error should contain the duplicated value');
             assert.equal(suberr.properties.path, key, 'the sub-error should contain the duplicated value\'s path');
             assert.equal(suberr.properties.type, 'Duplicate value', 'the sub-error\'s type should be "Duplicate value"');
 
