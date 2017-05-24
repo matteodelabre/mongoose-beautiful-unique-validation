@@ -99,6 +99,8 @@ function beautify(error, doc, messages) {
         var beautifiedError = new MongooseError.ValidationError();
 
         beautifiedError.errors = suberrors;
+        beautifiedError.code = error.code;
+        beautifiedError.fields = Object.keys(suberrors);
         return beautifiedError;
     });
 }
