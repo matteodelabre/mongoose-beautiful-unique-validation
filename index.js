@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 // Regex matching 2 kinds of error messages
 // E11000 duplicate key error index: mydb.users.$email_1 dup...
 // E11000 duplicate key error collection: mydb.users index: email_1 dup...
-var errorRegex = /^E11.*?\s*(?:collection: .+?\.(.+?)\s*)?index:\s*(?:.+?\.(.+?)\.\$)?(.*?)\s*dup/;
+var errorRegex = /E11.*?\s*(?:collection: .+?\.(.+?)\s*)?index:\s*(?:.+?\.(.+?)\.\$)?(.*?)\s*dup/;
 
 var indexesCache = {};
 
