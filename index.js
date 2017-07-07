@@ -98,7 +98,7 @@ function beautify(error, doc, messages) {
                         var props = {
                             type: 'Duplicate value',
                             path: path,
-                            value: validDoc ? doc[path] : 'Sorry, value not available :('
+                            value: validDoc ? doc.get(path) : 'Sorry, value not available :('
                         };
 
                         if (typeof messages[path] === 'string') {
