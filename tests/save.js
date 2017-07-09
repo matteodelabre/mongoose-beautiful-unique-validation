@@ -2,8 +2,10 @@
 
 var test = require('tape');
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var Promise = require('promise');
 var utils = require('./utils');
+
+var Schema = mongoose.Schema;
 var assertDuplicateFailure = utils.assertDuplicateFailure;
 var wait = utils.wait;
 var beautifulValidation = require('../');
@@ -84,35 +86,74 @@ test('should report duplicates with Model.findOneAndUpdate()', function (assert)
 
     var Foau = mongoose.model('Foau', FoauSchema);
 
-    // create an initial instance
-    new Foau({
-        address: '123 Fake St.'
-    }).save().then(function () {
-        return wait(500);
-    }).then(function () {
-        // save another document that does not violate the unique constraint
+    // Create two non-conflicting instances and save them
+    Promise.all([
+        new Foau({
+            address: '123 Fake St.'
+        }).save(),
         new Foau({
             address: '321 Fake St.'
-        }).save().then(function () {
-            return wait(500);
-        }).then(function () {
-            // find the non-duplicate document and update it to become a dup
-            Foau.findOneAndUpdate({
-                address: '321 Fake St.'
-            }, {
-                address: '123 Fake St.'
-            }).exec().then(function () {
-                console.log(arguments);
-                assert.fail('should not update duplicate successfully');
-                assert.end();
-            }, function (err) {
-                assert.ok(err, 'err should exist');
-                assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
-                assert.end();
-            });
+        }).save()
+    ]).then(function () {
+        return wait(500);
+    }).then(function () {
+        // Update one of the instances to conflict with the first one
+        Foau.findOneAndUpdate({
+            address: '321 Fake St.'
+        }, {
+            address: '123 Fake St.'
+        }).exec().then(function () {
+            assert.fail('should not update duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.ok(err, 'err should exist');
+            assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+            assert.end();
         });
-    }, function (err) {
+    }).catch(function (err) {
         assert.error(err, 'should save original instance successfully');
+        assert.end();
+    });
+});
+
+test('should report duplicates with Model.update()', function (assert) {
+    var UpdateSchema = new Schema({
+        address: {
+            type: String,
+            unique: true
+        }
+    });
+
+    var Update = mongoose.model('Update', UpdateSchema);
+
+    // Create two non-conflicting instances and save them
+    var upd1 = new Update({
+        address: '123 Fake St.'
+    });
+
+    var upd2 = new Update({
+        address: '321 Fake St.'
+    });
+
+    Promise.all([
+        upd1.save(),
+        upd2.save()
+    ]).then(function () {
+        return wait(500);
+    }).then(function () {
+        // Update one of the instances to conflict with the first one
+        return upd2.update({
+            $set: {address: '123 Fake St.'}
+        }).exec().then(function () {
+            assert.fail('should not update duplicate successfully');
+            assert.end();
+        }, function (err) {
+            assert.ok(err, 'err should exist');
+            assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+            assert.end();
+        });
+    }).catch(function (err) {
+        assert.error(err, 'should save original instances successfully');
         assert.end();
     });
 });

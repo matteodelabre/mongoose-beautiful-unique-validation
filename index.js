@@ -161,5 +161,6 @@ module.exports = function (schema) {
     };
 
     schema.post('save', postHook);
+    schema.post('update', postHook);
     schema.post('findOneAndUpdate', postHook);
 };
