@@ -2,7 +2,6 @@
 
 var test = require('tape');
 var mongoose = require('mongoose');
-var Promise = require('promise');
 
 var Schema = mongoose.Schema;
 var beautifulValidation = require('../');
@@ -169,7 +168,7 @@ test('should report duplicates with Model.findOneAndUpd()', function (assert) {
         assert.error(indexErr, 'indexes should be built correctly');
 
         // Create two non-conflicting instances and save them
-        Promise.all([
+        global.Promise.all([
             new Foau({
                 address: '123 Fake St.'
             }).save(),
@@ -218,7 +217,7 @@ test('should report duplicates with Model.update()', function (assert) {
             address: '321 Fake St.'
         });
 
-        Promise.all([
+        global.Promise.all([
             upd1.save(),
             upd2.save()
         ]).then(function () {

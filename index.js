@@ -1,7 +1,6 @@
 'use strict';
 
 var MongooseError = require('mongoose/lib/error');
-var Promise = require('promise');
 
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
@@ -25,7 +24,7 @@ function isUniqueError(err) {
  * @return {Promise} Resolved with index information data.
  */
 function getIndexes(collection) {
-    return new Promise(function (resolve, reject) {
+    return new global.Promise(function (resolve, reject) {
         if (indexesCache[collection.name]) {
             resolve(indexesCache[collection.name]);
             return;
@@ -55,7 +54,7 @@ function getIndexes(collection) {
  */
 function beautify(error, collection, values, messages) {
     // Try to recover the list of duplicated fields
-    var onSuberrors = Promise.resolve({});
+    var onSuberrors = global.Promise.resolve({});
 
     // Extract the failed duplicate index's name from the
     // from the error message (with a hacky regex)

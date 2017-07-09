@@ -3,11 +3,10 @@
 var test = require('tape');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
-var Promise = require('promise');
 
 // Pass our Promise implementation
 // (see http://mongoosejs.com/docs/promises.html)
-mongoose.Promise = Promise;
+mongoose.Promise = global.Promise;
 
 // Connect to a random database
 var mongouri = 'mongodb://127.0.0.1/mongoose-buv-'
