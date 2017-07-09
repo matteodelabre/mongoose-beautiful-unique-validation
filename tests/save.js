@@ -108,6 +108,7 @@ test('should report duplicates with Model.findOneAndUpdate()', function (assert)
             }, function (err) {
                 assert.ok(err, 'err should exist');
                 assert.equal(err.name, 'ValidationError', 'outer err should be of type ValidationError');
+                assert.notEqual(Object.keys(err.errors).length, 0, 'errors should not be empty');
                 assert.end();
             });
         });
