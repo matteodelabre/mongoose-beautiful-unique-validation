@@ -11,7 +11,8 @@ mongoose.Promise = Promise;
 
 mongoose.connect(
     'mongodb://127.0.0.1/mongoose-buv-' +
-    crypto.randomBytes(8).toString('hex')
+    crypto.randomBytes(8).toString('hex'),
+    {useMongoClient: true}
 ).then(function () {
     // run tests
     require('./save');
