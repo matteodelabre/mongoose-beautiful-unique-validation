@@ -27,15 +27,15 @@
     "url": "https://github.com/matteodelabre"
   },
   "dependencies": {
-    "promise": "^7.1.1"
+    "promise": "^7.3.1"
   },
   "peerDependencies": {
     "mongoose": ">=4.5"
   },
   "devDependencies": {
-    "mongoose": "^4.5.9",
     "kerberos": "0.0.19",
+    "mongoose": "^4.11.1",
     "tap-spec": "^4.1.1",
-    "tape": "^4.5.1"
+    "tape": "^4.7.0"
   }
 }
