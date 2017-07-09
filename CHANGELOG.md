@@ -6,6 +6,10 @@
 
 * Drop support for Node.js 0.10 and 0.12.
 
+### New features
+
+* `#findOneAndUpdate` now provides failing paths info.
+
 ### Fixed bugs
 
 * Beautifies errors triggered upon a call to `Model.update()` as advertised.
