@@ -1,5 +1,15 @@
 # Changelog
 
+## v6.0.0
+
+### Breaking changes
+
+* Drop support for Node.js 0.10 and 0.12.
+
+### Fixed bugs
+
+* Beautifies errors triggered upon a call to `Model.update()` as advertised.
+
 ## v5.1.1
 
 ### Fixed bugs
