@@ -62,7 +62,7 @@ npm install --save mongoose-beautiful-unique-validation
 
 ### Supported versions of Mongoose
 
-Starting from version 5.0.0, this module only supports Mongoose 4.5.0 and upper. If you need to use it with outdated versions of Mongoose, refer to [the older 4.0.0 versions.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/tree/3153ac4c485885e61bd8567cd3825844e65e84d1c0)
+Starting from version 5.0.0, this module only supports Mongoose 4.5.0 and upper. If you need to use it with outdated versions of Mongoose, refer to [the older 4.0.0 versions.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/tree/v4.0.0)
 
 ### Supported versions of Node
 
