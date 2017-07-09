@@ -75,7 +75,7 @@ function beautify(error, collection, values, messages) {
                     var props = {
                         type: 'Duplicate value',
                         path: path,
-                        value: values[path] || ''
+                        value: values[path]
                     };
 
                     if (typeof messages[path] === 'string') {

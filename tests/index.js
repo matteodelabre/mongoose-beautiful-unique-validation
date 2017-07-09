@@ -5,16 +5,18 @@ var crypto = require('crypto');
 var mongoose = require('mongoose');
 var Promise = require('promise');
 
-// pass our Promise implementation
+// Pass our Promise implementation
 // (see http://mongoosejs.com/docs/promises.html)
 mongoose.Promise = Promise;
 
-mongoose.connect(
-    'mongodb://127.0.0.1/mongoose-buv-' +
-    crypto.randomBytes(8).toString('hex'),
-    {useMongoClient: true}
-).then(function () {
-    // run tests
+// Connect to a random database
+var mongouri = 'mongodb://127.0.0.1/mongoose-buv-'
+    + crypto.randomBytes(8).toString('hex');
+
+console.log('Connecting to ' + mongouri + '...');
+
+mongoose.connect(mongouri, {useMongoClient: true}).then(function () {
+    // Run tests
     require('./save');
 
     // clean up the test database and disconnect after all tests
