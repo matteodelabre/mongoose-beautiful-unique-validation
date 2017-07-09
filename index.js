@@ -48,54 +48,49 @@ function getIndexes(collection) {
  * by turning it into a validation error
  *
  * @param {MongoError} err Error to process
- * @param {Document} doc The duplicated document
+ * @param {Collection} collection Mongoose collection.
+ * @param {Object} values Hashmap containing data about duplicated values
  * @param {Object} messages Map fields to unique error messages
  * @return {Promise.<ValidationError>} Beautified error message
  */
-function beautify(error, doc, messages) {
-    // Recover the list of duplicated fields. Only available if the
-    // driver provides access to the original collection (for retrieving
-    // the duplicated index's fields)
-    var next = Promise.resolve({});
+function beautify(error, collection, values, messages) {
+    // Try to recover the list of duplicated fields
+    var onSuberrors = Promise.resolve({});
 
-    if ('collection' in doc) {
-        var collection = doc.collection;
+    // Extract the failed duplicate index's name from the
+    // from the error message (with a hacky regex)
+    var matches = errorRegex.exec(error.message);
 
-        // Extract the failed duplicate index's name from the
-        // from the error message (with a hacky regex)
-        var matches = errorRegex.exec(error.message);
+    if (matches) {
+        var indexName = matches[1];
 
-        if (matches) {
-            var indexName = matches[1];
+        // Retrieve that index's list of fields
+        onSuberrors = getIndexes(collection).then(function (indexes) {
+            var suberrors = {};
 
-            // Retrieve that index's list of fields
-            next = getIndexes(collection).then(function (indexes) {
-                var suberrors = {};
+            // Create a suberror per duplicated field
+            if (indexName in indexes) {
+                indexes[indexName].forEach(function (field) {
+                    var path = field[0];
+                    var props = {
+                        type: 'Duplicate value',
+                        path: path,
+                        value: values[path]
+                    };
 
-                // Create a suberror per duplicated field
-                if (indexName in indexes) {
-                    indexes[indexName].forEach(function (field) {
-                        var path = field[0];
-                        var props = {
-                            type: 'Duplicate value',
-                            path: path,
-                            value: doc[path]
-                        };
+                    if (typeof messages[path] === 'string') {
+                        props.message = messages[path];
+                    }
 
-                        if (typeof messages[path] === 'string') {
-                            props.message = messages[path];
-                        }
+                    suberrors[path] = new MongooseError.ValidatorError(props);
+                });
+            }
 
-                        suberrors[path] = new MongooseError.ValidatorError(props);
-                    });
-                }
-
-                return suberrors;
-            });
-        }
+            return suberrors;
+        });
     }
 
-    return next.then(function (suberrors) {
+    return onSuberrors.then(function (suberrors) {
         var beautifiedError = new MongooseError.ValidationError();
 
         beautifiedError.errors = suberrors;
@@ -144,7 +139,17 @@ module.exports = function (schema) {
 
         if (isUniqueError(error)) {
             // Beautify unicity constraint failure errors
-            beautify(error, doc, messages)
+            var collection, values;
+
+            if (this.constructor.name == 'Query') {
+                collection = this.model.collection;
+                values = this._update;
+            } else {
+                collection = doc.collection;
+                values = doc;
+            }
+
+            beautify(error, collection, values, messages)
                 .then(next)
                 .catch(function (beautifyError) {
                     setTimeout(function () {
