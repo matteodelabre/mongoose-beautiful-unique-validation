@@ -2,8 +2,13 @@
 
 var MongooseError = require('mongoose/lib/error');
 var Promise = require('promise');
+var mongoose = require('mongoose');
 
-var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
+// Regex matching 2 kinds of error messages
+// E11000 duplicate key error index: mydb.users.$email_1 dup...
+// E11000 duplicate key error collection: mydb.users index: email_1 dup...
+var errorRegex = /E11.*?\s*(?:collection: .+?\.(.+?)\s*)?index:\s*(?:.+?\.(.+?)\.\$)?(.*?)\s*dup/;
+
 var indexesCache = {};
 
 /**
@@ -15,6 +20,18 @@ var indexesCache = {};
 function isUniqueError(err) {
     return err && err.name === 'MongoError' &&
         (err.code === 11000 || err.code === 11001);
+}
+
+/**
+ * Extract collection name and failed duplicate index's name
+ * from the error message (with a hacky regex)
+ *
+ * @param {Object} err Error to analyze
+ * @return {Object} Either collection and index name or undefined 
+ */
+function uniqueErrorInfo(err) {
+    var matches = errorRegex.exec(err.message);
+    return matches && !matches[1] != !matches[2] ? { collectionName: matches[1] || matches[2], indexName: matches[3] } : undefined;
 }
 
 /**
@@ -58,28 +75,30 @@ function beautify(error, doc, messages) {
     // the duplicated index's fields)
     var next = Promise.resolve({});
 
-    if ('collection' in doc) {
-        var collection = doc.collection;
+    // Retrieve collection name and the index name
+    var info = uniqueErrorInfo(error);
+    if (info) {
 
-        // extract the failed duplicate index's name from the
-        // from the error message (with a hacky regex)
-        var matches = errorRegex.exec(error.message);
-
-        if (matches) {
-            var indexName = matches[1];
+        // This check is a workaround for mongoose 4.11.1 and below
+        // See https://github.com/Automattic/mongoose/issues/5405
+        var validDoc = doc && doc !== error;
+    
+        var collection = validDoc && 'collection' in doc ? doc.collection : mongoose.connection.db.collection(info.collectionName);
+    
+        if (collection) {
 
             // retrieve that index's list of fields
             next = getIndexes(collection).then(function (indexes) {
                 var suberrors = {};
 
                 // create a suberror per duplicated field
-                if (indexName in indexes) {
-                    indexes[indexName].forEach(function (field) {
+                if (info.indexName in indexes) {
+                    indexes[info.indexName].forEach(function (field) {
                         var path = field[0];
                         var props = {
                             type: 'Duplicate value',
                             path: path,
-                            value: doc[path]
+                            value: validDoc ? doc.get(path) : 'Sorry, value not available :('
                         };
 
                         if (typeof messages[path] === 'string') {
