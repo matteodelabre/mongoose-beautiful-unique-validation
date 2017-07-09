@@ -7,10 +7,10 @@ var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
 
 /**
- * Check if given error is an unique error
+ * Check if the given error is a unique error.
  *
- * @param {Object} err Error to test
- * @return {bool} True if it is an unique error
+ * @param {Object} err Error to test.
+ * @return {bool} True if and only if it is an unique error.
  */
 function isUniqueError(err) {
     return err && err.name === 'MongoError' &&
@@ -19,10 +19,10 @@ function isUniqueError(err) {
 
 /**
  * Retrieve index information using collection#indexInformation
- * or previously cached data
+ * or previously cached data.
  *
- * @param {Object} collection Mongoose collection
- * @return {Promise} Resolved with index information data
+ * @param {Object} collection Mongoose collection.
+ * @return {Promise} Resolved with index information data.
  */
 function getIndexes(collection) {
     return new Promise(function (resolve, reject) {
@@ -53,7 +53,7 @@ function getIndexes(collection) {
  * @return {Promise.<ValidationError>} Beautified error message
  */
 function beautify(error, doc, messages) {
-    // recover the list of duplicated fields. Only available if the
+    // Recover the list of duplicated fields. Only available if the
     // driver provides access to the original collection (for retrieving
     // the duplicated index's fields)
     var next = Promise.resolve({});
@@ -61,18 +61,18 @@ function beautify(error, doc, messages) {
     if ('collection' in doc) {
         var collection = doc.collection;
 
-        // extract the failed duplicate index's name from the
+        // Extract the failed duplicate index's name from the
         // from the error message (with a hacky regex)
         var matches = errorRegex.exec(error.message);
 
         if (matches) {
             var indexName = matches[1];
 
-            // retrieve that index's list of fields
+            // Retrieve that index's list of fields
             next = getIndexes(collection).then(function (indexes) {
                 var suberrors = {};
 
-                // create a suberror per duplicated field
+                // Create a suberror per duplicated field
                 if (indexName in indexes) {
                     indexes[indexName].forEach(function (field) {
                         var path = field[0];
@@ -106,7 +106,7 @@ function beautify(error, doc, messages) {
 module.exports = function (schema) {
     var tree = schema.tree, key, messages = {};
 
-    // fetch error messages defined in the "unique" field,
+    // Fetch error messages defined in the "unique" field,
     // store them for later use and replace them with true
     for (key in tree) {
         if (tree.hasOwnProperty(key)) {
@@ -127,11 +127,11 @@ module.exports = function (schema) {
         }
     });
 
-    // this hook gets called after any save or update
-    // operation by Mongoose and filters unique errors
+    // Post hook that gets called after any save or update
+    // operation and that filters unique errors
     var postHook = function (error, doc, next) {
-        // if the next() function is missing, this might by
-        // a sign that we use an outdated Mongoose
+        // If the next() function is missing, this might be
+        // a sign that we are using an outdated Mongoose
         if (typeof next !== 'function') {
             throw new Error(
                 'mongoose-beautiful-unique-validation error: ' +
@@ -143,7 +143,7 @@ module.exports = function (schema) {
         }
 
         if (isUniqueError(error)) {
-            // beautify unicity constraint failure errors
+            // Beautify unicity constraint failure errors
             beautify(error, doc, messages)
                 .then(next)
                 .catch(function (beautifyError) {
@@ -155,7 +155,7 @@ module.exports = function (schema) {
                     });
                 });
         } else {
-            // pass over normal errors
+            // Pass over other errors
             next(error);
         }
     };
