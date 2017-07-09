@@ -75,7 +75,7 @@ function beautify(error, collection, values, messages) {
                     var props = {
                         type: 'Duplicate value',
                         path: path,
-                        value: values[path]
+                        value: values[path] || ''
                     };
 
                     if (typeof messages[path] === 'string') {
@@ -144,6 +144,11 @@ module.exports = function (schema) {
             if (this.constructor.name == 'Query') {
                 collection = this.model.collection;
                 values = this._update;
+
+                if ('$set' in values) {
+                    values = Object.assign({}, values, values.$set);
+                    delete values.$set;
+                }
             } else {
                 collection = doc.collection;
                 values = doc;
