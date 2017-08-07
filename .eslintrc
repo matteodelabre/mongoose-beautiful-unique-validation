@@ -15,6 +15,7 @@
         "semi": 2,
         "indent": 2,
         "camelcase": 2,
+        "curly": 2,
         "brace-style": 2,
         "comma-spacing": 2,
         "comma-style": 2,
