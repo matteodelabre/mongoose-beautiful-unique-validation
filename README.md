@@ -174,7 +174,16 @@ Schemata in which this module is plugged in will produce beautified duplication 
 
 **You need to plug in this module after declaring all indexes on the schema, otherwise they will not be beautified.**
 
-By default, the `ValidatorError` message will be `Validator failed for path xxx with value xxx`. If you want to override it, add your custom message in the `unique` field (instead of `true`), during the schema's creation.
+By default, the `ValidatorError` message will be the formatted value of `mongoose.Error.messages.general.unique` (which is set automatically by this package if not already defined).
+
+The default value of `mongoose.Error.messages.general.unique` is ``"Path `{PATH}` ({VALUE}) is not unique."`` which adheres to [the Mongoose error message defaults](https://github.com/Automattic/mongoose/blob/master/lib/error/messages.js).
+
+If you want to override it, add your custom message in the `unique` field (instead of `true`), during the schema's creation (or) override the default global Mongoose error:
+
+```js
+// change this however you'd like
+mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
+```
 
 The `errors` attribute contains a list of all original values that failed the unique contraint. This property is not filled in when using `findOneAndUpdate`.
 
