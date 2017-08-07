@@ -1,6 +1,10 @@
 'use strict';
 
-var MongooseError = require('mongoose/lib/error');
+var mongoose = require('mongoose');
+
+// bind custom message for mongoose if it doesn't already exist
+if (!mongoose.Error.messages.general.unique)
+  mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
 
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
@@ -72,16 +76,18 @@ function beautify(error, collection, values, messages) {
                 indexes[indexName].forEach(function (field) {
                     var path = field[0];
                     var props = {
-                        type: 'Duplicate value',
+                        type: 'unique',
                         path: path,
                         value: values[path]
                     };
 
                     if (typeof messages[path] === 'string') {
                         props.message = messages[path];
+                    } else {
+                        props.message = mongoose.Error.messages.general.unique;
                     }
 
-                    suberrors[path] = new MongooseError.ValidatorError(props);
+                    suberrors[path] = new mongoose.Error.ValidatorError(props);
                 });
             }
 
@@ -90,7 +96,7 @@ function beautify(error, collection, values, messages) {
     }
 
     return onSuberrors.then(function (suberrors) {
-        var beautifiedError = new MongooseError.ValidationError();
+        var beautifiedError = new mongoose.Error.ValidationError();
 
         beautifiedError.errors = suberrors;
         return beautifiedError;

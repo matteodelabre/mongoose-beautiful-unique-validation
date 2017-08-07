@@ -11,14 +11,14 @@ mongoose.plugin(beautifulValidation);
 /**
  * Assert that the given object is a correct validation error.
  *
- * @param {Object} assert Tape assertion object
+ * @param {Object} t Tape assertion object
  * @param {Object} err Object to test.
  * @param {Object} dups Map from fields that are duplicated to their value.
  * @param {string} [message=default] Ensure the given message is
  * thrown with the duplicate error's sub-errors
  */
-function assertUniqueError(assert, err, dups, message) {
-    assert.equal(err.name, 'ValidationError',
+function assertUniqueError(t, err, dups, message) {
+    t.equal(err.name, 'ValidationError',
         'the thrown error should be of type ValidationError');
 
     var missing = Object.keys(dups).filter(function (key) {
@@ -28,47 +28,48 @@ function assertUniqueError(assert, err, dups, message) {
             return true;
         }
 
-        assert.equal(suberr.name, 'ValidatorError',
-            'each sub-error should be of type ValidatorError');
-        assert.equal(suberr.kind, 'Duplicate value',
-            'each sub-error\'s kind should be "Duplicate value"');
+
+        t.equal(suberr.name, 'ValidatorError',
+            'each sub-error should be of name ValidatorError');
+        t.equal(suberr.kind, 'unique',
+            'each sub-error\'s kind should be "unique"');
 
         if (message !== undefined) {
-            assert.equal(suberr.message, message,
+            t.equal(suberr.message, message,
                 'each sub-error should carry over the custom message');
         }
 
         // with buffer values, only compare the inner "buffer" property
-        assert.equal(
+        t.equal(
             suberr.properties.value.toString(), dups[key].toString(),
             'the sub-error should contain the duplicated value'
         );
 
-        assert.equal(
+        t.equal(
             suberr.properties.path, key,
             'the sub-error should contain the duplicated value\'s path'
         );
 
-        assert.equal(
-            suberr.properties.type, 'Duplicate value',
-            'the sub-error\'s type should be "Duplicate value"'
+        t.equal(
+            suberr.properties.type, 'unique',
+            'the sub-error\'s type should be "unique"'
         );
 
         return false;
     });
 
-    assert.equal(
+    t.equal(
         missing.length, 0,
         'should report a sub-error per duplicated field'
     );
 
-    assert.equal(
+    t.equal(
         Object.keys(err.errors).length, Object.keys(dups).length,
         'should only report a sub-error per duplicated field'
     );
 }
 
-test('should report duplicates', function (assert) {
+test('should report duplicates', function (t) {
     var DuplicateSchema = new Schema({
         name: {
             type: String,
@@ -86,7 +87,7 @@ test('should report duplicates', function (assert) {
     var Duplicate = mongoose.model('Duplicate', DuplicateSchema);
 
     Duplicate.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new Duplicate({
             name: 'John Doe',
@@ -99,19 +100,19 @@ test('should report duplicates', function (assert) {
                 address: '123 Fake St.'
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {'address': '123 Fake St.'});
-            assert.end();
+            assertUniqueError(t, err, {'address': '123 Fake St.'});
+            t.end();
         });
     });
 });
 
-test('should report duplicates with Model.create()', function (assert) {
+test('should report duplicates with Model.create()', function (t) {
     var CreateSchema = new Schema({
         name: {
             type: String,
@@ -129,7 +130,7 @@ test('should report duplicates with Model.create()', function (assert) {
     var Create = mongoose.model('Create', CreateSchema);
 
     Create.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         Create.create({
             name: 'John Doe',
@@ -142,19 +143,19 @@ test('should report duplicates with Model.create()', function (assert) {
                 address: '123 Fake St.'
             });
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {'address': '123 Fake St.'});
-            assert.end();
+            assertUniqueError(t, err, {'address': '123 Fake St.'});
+            t.end();
         });
     });
 });
 
-test('should report duplicates with Model.findOneAndUpd()', function (assert) {
+test('should report duplicates with Model.findOneAndUpd()', function (t) {
     var FoauSchema = new Schema({
         address: {
             type: String,
@@ -165,7 +166,7 @@ test('should report duplicates with Model.findOneAndUpd()', function (assert) {
     var Foau = mongoose.model('Foau', FoauSchema);
 
     Foau.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         // Create two non-conflicting instances and save them
         global.Promise.all([
@@ -182,20 +183,20 @@ test('should report duplicates with Model.findOneAndUpd()', function (assert) {
             }, {
                 address: '123 Fake St.'
             }).exec().then(function () {
-                assert.fail('should not update duplicate successfully');
-                assert.end();
+                t.fail('should not update duplicate successfully');
+                t.end();
             }, function (err) {
-                assertUniqueError(assert, err, {'address': '123 Fake St.'});
-                assert.end();
+                assertUniqueError(t, err, {'address': '123 Fake St.'});
+                t.end();
             });
         }).catch(function (err) {
-            assert.error(err, 'should save original instance successfully');
-            assert.end();
+            t.error(err, 'should save original instance successfully');
+            t.end();
         });
     });
 });
 
-test('should report duplicates with Model.update()', function (assert) {
+test('should report duplicates with Model.update()', function (t) {
     var UpdateSchema = new Schema({
         address: {
             type: String,
@@ -206,7 +207,7 @@ test('should report duplicates with Model.update()', function (assert) {
     var Update = mongoose.model('Update', UpdateSchema);
 
     Update.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         // Create two non-conflicting instances and save them
         var upd1 = new Update({
@@ -225,20 +226,20 @@ test('should report duplicates with Model.update()', function (assert) {
             return upd2.update({
                 $set: {address: '123 Fake St.'}
             }).exec().then(function () {
-                assert.fail('should not update duplicate successfully');
-                assert.end();
+                t.fail('should not update duplicate successfully');
+                t.end();
             }, function (err) {
-                assertUniqueError(assert, err, {address: '123 Fake St.'});
-                assert.end();
+                assertUniqueError(t, err, {address: '123 Fake St.'});
+                t.end();
             });
         }, function (err) {
-            assert.error(err, 'should save original instances successfully');
-            assert.end();
+            t.error(err, 'should save original instances successfully');
+            t.end();
         });
     });
 });
 
-test('should report duplicates on fields containing spaces', function (assert) {
+test('should report duplicates on fields containing spaces', function (t) {
     var SpacesSchema = new Schema({
         'display name': {
             type: String,
@@ -249,7 +250,7 @@ test('should report duplicates on fields containing spaces', function (assert) {
     var Spaces = mongoose.model('Spaces', SpacesSchema);
 
     Spaces.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new Spaces({
             'display name': 'Testing display names'
@@ -258,20 +259,20 @@ test('should report duplicates on fields containing spaces', function (assert) {
                 'display name': 'Testing display names'
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err,
+            assertUniqueError(t, err,
                 {'display name': 'Testing display names'});
-            assert.end();
+            t.end();
         });
     });
 });
 
-test('should report duplicates on compound indexes', function (assert) {
+test('should report duplicates on compound indexes', function (t) {
     var CompoundSchema = new Schema({
         name: String,
         age: Number
@@ -287,7 +288,7 @@ test('should report duplicates on compound indexes', function (assert) {
     var Compound = mongoose.model('Compound', CompoundSchema);
 
     Compound.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new Compound({
             name: 'John Doe',
@@ -298,23 +299,23 @@ test('should report duplicates on compound indexes', function (assert) {
                 age: 42
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {
+            assertUniqueError(t, err, {
                 name: 'John Doe',
                 age: 42
             });
 
-            assert.end();
+            t.end();
         });
     });
 });
 
-test('should use custom validation messages', function (assert) {
+test('should use custom validation messages', function (t) {
     var MessageSchema = new Schema({
         address: {
             type: String,
@@ -325,7 +326,7 @@ test('should use custom validation messages', function (assert) {
     var Message = mongoose.model('Message', MessageSchema);
 
     Message.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new Message({
             address: '123 Fake St.'
@@ -334,22 +335,22 @@ test('should use custom validation messages', function (assert) {
                 address: '123 Fake St.'
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {
+            assertUniqueError(t, err, {
                 address: '123 Fake St.'
             }, 'this is our custom message!');
 
-            assert.end();
+            t.end();
         });
     });
 });
 
-test('should use custom validation messages w/ compound', function (assert) {
+test('should use custom validation messages w/ compound', function (t) {
     var CompoundMessageSchema = new Schema({
         name: String,
         age: Number
@@ -368,7 +369,7 @@ test('should use custom validation messages w/ compound', function (assert) {
     );
 
     CompoundMessage.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new CompoundMessage({
             name: 'John Doe',
@@ -379,23 +380,23 @@ test('should use custom validation messages w/ compound', function (assert) {
                 age: 42
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {
+            assertUniqueError(t, err, {
                 name: 'John Doe',
                 age: 42
             }, 'yet another custom message');
 
-            assert.end();
+            t.end();
         });
     });
 });
 
-test('should report duplicates on any mongoose type', function (assert) {
+test('should report duplicates on any mongoose type', function (t) {
     var AnyTypeSchema = new Schema({
         name: String,
         group: Schema.Types.ObjectId,
@@ -423,7 +424,7 @@ test('should report duplicates on any mongoose type', function (assert) {
     var AnyType = mongoose.model('AnyType', AnyTypeSchema);
 
     AnyType.on('index', function (indexErr) {
-        assert.error(indexErr, 'indexes should be built correctly');
+        t.error(indexErr, 'indexes should be built correctly');
 
         new AnyType({
             name: 'test',
@@ -444,13 +445,13 @@ test('should report duplicates on any mongoose type', function (assert) {
                 list: [1, 2, 3]
             }).save();
         }, function (err) {
-            assert.error(err, 'should save the first document successfully');
-            assert.end();
+            t.error(err, 'should save the first document successfully');
+            t.end();
         }).then(function () {
-            assert.fail('should not save the duplicate document successfully');
-            assert.end();
+            t.fail('should not save the duplicate document successfully');
+            t.end();
         }, function (err) {
-            assertUniqueError(assert, err, {
+            assertUniqueError(t, err, {
                 name: 'test',
                 group: groupId,
                 age: 42,
@@ -460,7 +461,7 @@ test('should report duplicates on any mongoose type', function (assert) {
                 list: [1, 2, 3]
             });
 
-            assert.end();
+            t.end();
         });
     });
 });
