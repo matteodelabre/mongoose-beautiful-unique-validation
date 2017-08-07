@@ -27,11 +27,11 @@
     "url": "https://github.com/matteodelabre"
   },
   "peerDependencies": {
-    "mongoose": ">=4.5"
+    "mongoose": ">=4.11.4"
   },
   "devDependencies": {
     "kerberos": "0.0.23",
-    "mongoose": "^4.11.1",
+    "mongoose": "^4.11.6",
     "tap-spec": "^4.1.1",
     "tape": "^4.7.0"
   }
