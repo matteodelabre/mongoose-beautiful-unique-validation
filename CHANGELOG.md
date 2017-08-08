@@ -1,5 +1,13 @@
 # Changelog
 
+## v7.0.0
+
+### Breaking changes
+
+* Drop support for Mongoose ≤ 4.11.3 due to #38.
+* Change sub-errors’ kind from `Duplicate value` to `unique` to better fit Mongoose’s conventions.
+* Change the default validation message to better fit Mongoose’s conventions.
+
 ## v6.0.0
 
 ### Breaking changes
