@@ -60,11 +60,11 @@ Starting from version 7.0.0, this module only supports Mongoose 4.11.4 and upper
 
 _Note that only security fixes will be backported to older versions._
 
-This package’s version | Supported Mongoose versions
-----------------------:|:---------------------------
-                     7 | ≥ 4.11.4
-                  5, 6 | ≥ 4.5.0
-            1, 2, 3, 4 | ≥ 4.0.0
+| This package’s version | Supported Mongoose versions |
+| ----------------------:|:--------------------------- |
+|                      7 | ≥ 4.11.4                    |
+|                   5, 6 | ≥ 4.5.0                     |
+|             1, 2, 3, 4 | ≥ 4.0.0                     |
 
 ### Supported versions of Node
 
