@@ -39,14 +39,8 @@ Because these errors are not of the same kind as normal [Validation](http://mong
     "errors": {
         "name": {
             "name":"ValidatorError",
-            "properties": {
-                "type": "Duplicate value",
-                "message": "Custom error message",
-                "path": "name",
-                "value": "John"
-            },
-            "message": "Custom error message",
-            "kind": "Duplicate value",
+            "kind": "unique",
+            "message": "Path `name` (John) is not unique.",
             "path": "name",
             "value": "John"
         }
@@ -78,10 +72,10 @@ const userSchema = mongoose.Schema({
     name: {
         type: String,
 
-        // Uniqueness validation will only be enabled by truthy values
-        // such as `true` or a non-empty string. If you specify a string,
-        // it will be used as a custom error message
-        unique: 'Two users cannot share the same username'
+        // This value can either be `true` to use the default error
+        // message or a non-empty string to use a custom one.
+        // See `Usage` below for more on error messages.
+        unique: 'Two users cannot share the same username ({VALUE})'
     }
 });
 
@@ -127,7 +121,7 @@ const beautifyUnique = require('mongoose-beautiful-unique-validation');
 const userSchema = mongoose.Schema({
     name: {
         type: String,
-        unique: 'Two users cannot share the same username'
+        unique: 'Two users cannot share the same username ({VALUE})'
     }
 });
 
