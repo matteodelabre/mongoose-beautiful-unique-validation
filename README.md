@@ -191,6 +191,18 @@ If you want to override it, add your custom message in the `unique` field (inste
 mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
 ```
 
+## Contributions
+
+This is free and open source software. All contributions (even small ones) are welcome. [Check out the contribution guide to get started!](CONTRIBUTING.md)
+
+Thanks to all contributors:
+
+* [Bohdan Tkachenko](https://github.com/BohdanTkachenko)
+* [Savioo](https://github.com/Saviio)
+* [Bhavik Vyas (bvyask)](https://github.com/bvyask)
+* [Nick Sellen](https://github.com/nicksellen)
+* [niftylettuce](https://github.com/niftylettuce)
+
 ## License
 
 Released under the MIT license. [See the full license text.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/blob/master/LICENSE)
