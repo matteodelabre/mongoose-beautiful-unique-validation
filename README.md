@@ -56,11 +56,19 @@ npm install --save mongoose-beautiful-unique-validation
 
 ### Supported versions of Mongoose
 
-Starting from version 5.0.0, this module only supports Mongoose 4.5.0 and upper. If you need to use it with outdated versions of Mongoose, refer to [the older 4.0.0 versions.](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/tree/v4.0.0)
+Starting from version 7.0.0, this module only supports Mongoose 4.11.4 and upper. Usage with older Mongoose versions might work, but is not supported. If we need to use outdated versions of Mongoose, use older versions of this package as documented in the table below.
+
+_Note that only security fixes will be backported to older versions._
+
+This package’s version | Supported Mongoose versions
+----------------------:|:---------------------------
+                     7 | ≥ 4.11.4
+                  5, 6 | ≥ 4.5.0
+            1, 2, 3, 4 | ≥ 4.0.0
 
 ### Supported versions of Node
 
-This module currently supports Node.js 4.x, 5.x, 6.x, 7.x and 8.x. If you find a bug while using one of these versions, please [fill a bug report!](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
+This module currently supports Node.js 4, 5, 6, 7 and 8. If you find a bug while using one of these versions, please [fill a bug report!](https://github.com/matteodelabre/mongoose-beautiful-unique-validation/issues/new)
 
 ## Example
 
@@ -168,6 +176,10 @@ Schemata in which this module is plugged in will produce beautified duplication 
 
 **You need to plug in this module after declaring all indexes on the schema, otherwise they will not be beautified.**
 
+The `errors` attribute contains a list of all original values that failed the unique contraint.
+
+### Error messages
+
 By default, the `ValidatorError` message will be the formatted value of `mongoose.Error.messages.general.unique` (which is set automatically by this package if not already defined).
 
 The default value of `mongoose.Error.messages.general.unique` is ``"Path `{PATH}` ({VALUE}) is not unique."`` which adheres to [the Mongoose error message defaults](https://github.com/Automattic/mongoose/blob/master/lib/error/messages.js).
@@ -178,8 +190,6 @@ If you want to override it, add your custom message in the `unique` field (inste
 // change this however you'd like
 mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
 ```
-
-The `errors` attribute contains a list of all original values that failed the unique contraint. This property is not filled in when using `findOneAndUpdate`.
 
 ## License
 
