@@ -180,16 +180,34 @@ The `errors` attribute contains a list of all original values that failed the un
 
 ### Error messages
 
-By default, the `ValidatorError` message will be the formatted value of `mongoose.Error.messages.general.unique` (which is set automatically by this package if not already defined).
+By default, the `ValidatorError` message will be the formatted value of a String `options.message` (which is set automatically by this package if not already defined).
 
-The default value of `mongoose.Error.messages.general.unique` is ``"Path `{PATH}` ({VALUE}) is not unique."`` which adheres to [the Mongoose error message defaults](https://github.com/Automattic/mongoose/blob/master/lib/error/messages.js).
+The default value of `options.message` is ``"Path `{PATH}` ({VALUE}) is not unique."`` which adheres to [the Mongoose error message defaults](https://github.com/Automattic/mongoose/blob/master/lib/error/messages.js).
 
-If you want to override it, add your custom message in the `unique` field (instead of `true`), during the schema's creation (or) override the default global Mongoose error:
+If you want to override it, you have two choices:
+
+1. Add your custom message in the `unique` field (instead of `true`), during the schema's creation:
+
+```diff
+const userSchema = mongoose.Schema({
+    name: {
+        type: String,
++        unique: 'Two users cannot share the same username ({VALUE})'
+-        unique: true
+    }
+});
+```
+
+2. Override the global default through `options.message` while initializing the schema plugin:
 
 ```js
 // change this however you'd like
-mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
+userSchema.plugin(beautifyUnique, {
+    message: "Path `{PATH}` ({VALUE}) is not unique."
+});
 ```
+
+> **Note**: Custom messages defined in the schema will always take precedence over the global default message.
 
 ## Contributions
 
