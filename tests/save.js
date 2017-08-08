@@ -14,10 +14,10 @@ mongoose.plugin(beautifulValidation);
  * @param {Object} t Tape assertion object
  * @param {Object} err Object to test.
  * @param {Object} dups Map from fields that are duplicated to their value.
- * @param {string} [message=default] Ensure the given message is
- * thrown with the duplicate error's sub-errors
+ * @param {Object} messages Map from fields to the message that should be
+ * associated to the error object resulting from their duplicated value.
  */
-function assertUniqueError(t, err, dups, message) {
+function assertUniqueError(t, err, dups, messages) {
     t.equal(err.name, 'ValidationError',
         'the thrown error should be of type ValidationError');
 
@@ -33,11 +33,8 @@ function assertUniqueError(t, err, dups, message) {
             'each sub-error should be of name ValidatorError');
         t.equal(suberr.kind, 'unique',
             'each sub-error\'s kind should be "unique"');
-
-        if (message !== undefined) {
-            t.equal(suberr.message, message,
-                'each sub-error should carry over the custom message');
-        }
+        t.equal(suberr.message, messages[key],
+            'each sub-error should carry over the custom message');
 
         // with buffer values, only compare the inner "buffer" property
         t.equal(
@@ -106,7 +103,12 @@ test('should report duplicates', function (t) {
             t.fail('should not save the duplicate document successfully');
             t.end();
         }, function (err) {
-            assertUniqueError(t, err, {'address': '123 Fake St.'});
+            assertUniqueError(
+                t, err,
+                {address: '123 Fake St.'},
+                {address: 'Path `address` (123 Fake St.) is not unique.'}
+            );
+
             t.end();
         });
     });
@@ -149,7 +151,12 @@ test('should report duplicates with Model.create()', function (t) {
             t.fail('should not save the duplicate document successfully');
             t.end();
         }, function (err) {
-            assertUniqueError(t, err, {'address': '123 Fake St.'});
+            assertUniqueError(
+                t, err,
+                {address: '123 Fake St.'},
+                {address: 'Path `address` (123 Fake St.) is not unique.'}
+            );
+
             t.end();
         });
     });
@@ -186,7 +193,12 @@ test('should report duplicates with Model.findOneAndUpd()', function (t) {
                 t.fail('should not update duplicate successfully');
                 t.end();
             }, function (err) {
-                assertUniqueError(t, err, {'address': '123 Fake St.'});
+                assertUniqueError(
+                    t, err,
+                    {address: '123 Fake St.'},
+                    {address: 'Path `address` (123 Fake St.) is not unique.'}
+                );
+
                 t.end();
             });
         }).catch(function (err) {
@@ -229,7 +241,12 @@ test('should report duplicates with Model.update()', function (t) {
                 t.fail('should not update duplicate successfully');
                 t.end();
             }, function (err) {
-                assertUniqueError(t, err, {address: '123 Fake St.'});
+                assertUniqueError(
+                    t, err,
+                    {address: '123 Fake St.'},
+                    {address: 'Path `address` (123 Fake St.) is not unique.'}
+                );
+
                 t.end();
             });
         }, function (err) {
@@ -265,8 +282,12 @@ test('should report duplicates on fields containing spaces', function (t) {
             t.fail('should not save the duplicate document successfully');
             t.end();
         }, function (err) {
-            assertUniqueError(t, err,
-                {'display name': 'Testing display names'});
+            assertUniqueError(
+                t, err,
+                {'display name': 'Testing display names'},
+                {'display name': 'Path `display name` '
+                    + '(Testing display names) is not unique.'}
+            );
             t.end();
         });
     });
@@ -308,6 +329,9 @@ test('should report duplicates on compound indexes', function (t) {
             assertUniqueError(t, err, {
                 name: 'John Doe',
                 age: 42
+            }, {
+                name: 'Path `name` (John Doe) is not unique.',
+                age: 'Path `age` (42) is not unique.'
             });
 
             t.end();
@@ -319,7 +343,7 @@ test('should use custom validation messages', function (t) {
     var MessageSchema = new Schema({
         address: {
             type: String,
-            unique: 'this is our custom message!'
+            unique: 'Custom message: {PATH}!'
         }
     });
 
@@ -341,9 +365,11 @@ test('should use custom validation messages', function (t) {
             t.fail('should not save the duplicate document successfully');
             t.end();
         }, function (err) {
-            assertUniqueError(t, err, {
-                address: '123 Fake St.'
-            }, 'this is our custom message!');
+            assertUniqueError(
+                t, err,
+                {address: '123 Fake St.'},
+                {address: 'Custom message: address!'}
+            );
 
             t.end();
         });
@@ -389,7 +415,10 @@ test('should use custom validation messages w/ compound', function (t) {
             assertUniqueError(t, err, {
                 name: 'John Doe',
                 age: 42
-            }, 'yet another custom message');
+            }, {
+                name: 'yet another custom message',
+                age: 'yet another custom message'
+            });
 
             t.end();
         });
@@ -419,7 +448,7 @@ test('should report duplicates on any mongoose type', function (t) {
         unique: true
     });
 
-    var groupId = new mongoose.Types.ObjectId;
+    var gid = new mongoose.Types.ObjectId;
     var date = new Date();
     var AnyType = mongoose.model('AnyType', AnyTypeSchema);
 
@@ -428,7 +457,7 @@ test('should report duplicates on any mongoose type', function (t) {
 
         new AnyType({
             name: 'test',
-            group: groupId,
+            group: gid,
             age: 42,
             date: date,
             blob: new Buffer('abc'),
@@ -437,7 +466,7 @@ test('should report duplicates on any mongoose type', function (t) {
         }).save().then(function () {
             return new AnyType({
                 name: 'test',
-                group: groupId,
+                group: gid,
                 age: 42,
                 date: date,
                 blob: new Buffer('abc'),
@@ -453,12 +482,20 @@ test('should report duplicates on any mongoose type', function (t) {
         }, function (err) {
             assertUniqueError(t, err, {
                 name: 'test',
-                group: groupId,
+                group: gid,
                 age: 42,
                 date: date,
                 blob: new Buffer('abc'),
                 isVerified: false,
                 list: [1, 2, 3]
+            }, {
+                name: 'Path `name` (test) is not unique.',
+                group: 'Path `group` (' + gid.toString() + ') is not unique.',
+                age: 'Path `age` (42) is not unique.',
+                date: 'Path `date` (' + date.toString() + ') is not unique.',
+                blob: 'Path `blob` (abc) is not unique.',
+                isVerified: 'Path `isVerified` (false) is not unique.',
+                list: 'Path `list` (1,2,3) is not unique.'
             });
 
             t.end();
