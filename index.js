@@ -2,9 +2,11 @@
 
 var mongoose = require('mongoose');
 
-// bind custom message for mongoose if it doesn't already exist
-if (!mongoose.Error.messages.general.unique)
-  mongoose.Error.messages.general.unique = 'Path `{PATH}` ({VALUE}) is not unique.';
+// Bind custom message for mongoose if it doesn't already exist
+if (mongoose.Error.messages.general.unique === undefined) {
+    mongoose.Error.messages.general.unique =
+        'Path `{PATH}` ({VALUE}) is not unique.';
+}
 
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
