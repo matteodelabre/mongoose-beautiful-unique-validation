@@ -176,17 +176,13 @@ Schemata in which this module is plugged in will produce beautified duplication 
 
 **You need to plug in this module after declaring all indexes on the schema, otherwise they will not be beautified.**
 
-The `errors` attribute contains a list of all original values that failed the unique contraint.
+The reported error has the same shape as normal validation errors. For each field that has a duplicate value, an item is added to the `errors` attribute. See examples above.
 
 ### Error messages
 
-By default, the `ValidatorError` message will be the formatted value of a String `options.message` (which is set automatically by this package if not already defined).
+By default, the validation error message will be ``Path `{PATH}` ({VALUE}) is not unique.``, with `{PATH}` replaced by the name of the duplicated field and `{VALUE}` by the value that already existed.
 
-The default value of `options.message` is ``"Path `{PATH}` ({VALUE}) is not unique."`` which adheres to [the Mongoose error message defaults](https://github.com/Automattic/mongoose/blob/master/lib/error/messages.js).
-
-If you want to override it, you have two choices:
-
-1. Add your custom message in the `unique` field (instead of `true`), during the schema's creation:
+To set a custom validation message on a particular path, add your message in the `unique` field (instead of `true`), during the schema's creation.
 
 ```diff
 const userSchema = mongoose.Schema({
@@ -198,12 +194,11 @@ const userSchema = mongoose.Schema({
 });
 ```
 
-2. Override the global default through `options.message` while initializing the schema plugin:
+When using the plugin globally or with a schema that has several paths with unique values, you might want to override the default message value. You can do that through the `defaultMessage` option while adding the plugin.
 
 ```js
-// change this however you'd like
 userSchema.plugin(beautifyUnique, {
-    message: "Path `{PATH}` ({VALUE}) is not unique."
+    defaultMessage: "This custom message will be used as the default"
 });
 ```
 
