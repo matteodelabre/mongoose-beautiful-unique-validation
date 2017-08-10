@@ -50,10 +50,10 @@ function getIndexes(collection) {
  * @param {Collection} collection Mongoose collection.
  * @param {Object} values Hashmap containing data about duplicated values
  * @param {Object} messages Map fields to unique error messages
- * @param {String} message Default message formatter string
+ * @param {String} defaultMessage Default message formatter string
  * @return {Promise.<ValidationError>} Beautified error message
  */
-function beautify(error, collection, values, messages, message) {
+function beautify(error, collection, values, messages, defaultMessage) {
     // Try to recover the list of duplicated fields
     var onSuberrors = global.Promise.resolve({});
 
@@ -81,7 +81,7 @@ function beautify(error, collection, values, messages, message) {
                     if (typeof messages[path] === 'string') {
                         props.message = messages[path];
                     } else {
-                        props.message = message;
+                        props.message = defaultMessage;
                     }
 
                     suberrors[path] = new mongoose.Error.ValidatorError(props);
@@ -104,8 +104,9 @@ module.exports = function (schema, options) {
     var tree = schema.tree, key, messages = {};
 
     options = options || {};
-    if (!options.message) {
-        options.message = 'Path `{PATH}` ({VALUE}) is not unique.';
+
+    if (!options.defaultMessage) {
+        options.defaultMessage = 'Path `{PATH}` ({VALUE}) is not unique.';
     }
 
     // Fetch error messages defined in the "unique" field,
@@ -161,7 +162,10 @@ module.exports = function (schema, options) {
                 values = doc;
             }
 
-            beautify(error, collection, values, messages, options.message)
+            beautify(
+                error, collection, values,
+                messages, options.defaultMessage
+            )
                 .then(next)
                 .catch(function (beautifyError) {
                     setTimeout(function () {
