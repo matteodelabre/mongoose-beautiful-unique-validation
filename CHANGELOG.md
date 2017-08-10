@@ -8,6 +8,10 @@
 * Change sub-errors’ kind from `Duplicate value` to `unique` to better fit Mongoose’s conventions.
 * Change the default validation message to better fit Mongoose’s conventions.
 
+### New features
+
+* Add a plugin option to override the global default unique validation message.
+
 ## v6.0.0
 
 ### Breaking changes
