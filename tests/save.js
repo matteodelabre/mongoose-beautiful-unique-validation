@@ -376,6 +376,47 @@ test('should use custom validation messages', function (t) {
     });
 });
 
+test('should allow overriding the default validation message', function (t) {
+    var DefaultMessageSchema = new Schema({
+        address: {
+            type: String,
+            unique: true
+        }
+    });
+
+    DefaultMessageSchema.plugin(beautifulValidation, {
+        defaultMessage: 'Default message override test, {PATH}'
+    });
+
+    var DefaultMessage = mongoose.model('DefaultMessage', DefaultMessageSchema);
+
+    DefaultMessage.on('index', function (indexErr) {
+        t.error(indexErr, 'indexes should be built correctly');
+
+        new DefaultMessage({
+            address: '123 Fake St.'
+        }).save().then(function () {
+            return new DefaultMessage({
+                address: '123 Fake St.'
+            }).save();
+        }, function (err) {
+            t.error(err, 'should save the first document successfully');
+            t.end();
+        }).then(function () {
+            t.fail('should not save the duplicate document successfully');
+            t.end();
+        }, function (err) {
+            assertUniqueError(
+                t, err,
+                {address: '123 Fake St.'},
+                {address: 'Default message override test, address'}
+            );
+
+            t.end();
+        });
+    });
+});
+
 test('should use custom validation messages w/ compound', function (t) {
     var CompoundMessageSchema = new Schema({
         name: String,
