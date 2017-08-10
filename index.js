@@ -2,12 +2,6 @@
 
 var mongoose = require('mongoose');
 
-// Bind custom message for mongoose if it doesn't already exist
-if (mongoose.Error.messages.general.unique === undefined) {
-    mongoose.Error.messages.general.unique =
-        'Path `{PATH}` ({VALUE}) is not unique.';
-}
-
 var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
 var indexesCache = {};
 
@@ -56,9 +50,10 @@ function getIndexes(collection) {
  * @param {Collection} collection Mongoose collection.
  * @param {Object} values Hashmap containing data about duplicated values
  * @param {Object} messages Map fields to unique error messages
+ * @param {String} defaultMessage Default message formatter string
  * @return {Promise.<ValidationError>} Beautified error message
  */
-function beautify(error, collection, values, messages) {
+function beautify(error, collection, values, messages, defaultMessage) {
     // Try to recover the list of duplicated fields
     var onSuberrors = global.Promise.resolve({});
 
@@ -86,7 +81,7 @@ function beautify(error, collection, values, messages) {
                     if (typeof messages[path] === 'string') {
                         props.message = messages[path];
                     } else {
-                        props.message = mongoose.Error.messages.general.unique;
+                        props.message = defaultMessage;
                     }
 
                     suberrors[path] = new mongoose.Error.ValidatorError(props);
@@ -105,8 +100,14 @@ function beautify(error, collection, values, messages) {
     });
 }
 
-module.exports = function (schema) {
+module.exports = function (schema, options) {
     var tree = schema.tree, key, messages = {};
+
+    options = options || {};
+
+    if (!options.defaultMessage) {
+        options.defaultMessage = 'Path `{PATH}` ({VALUE}) is not unique.';
+    }
 
     // Fetch error messages defined in the "unique" field,
     // store them for later use and replace them with true
@@ -161,7 +162,10 @@ module.exports = function (schema) {
                 values = doc;
             }
 
-            beautify(error, collection, values, messages)
+            beautify(
+                error, collection, values,
+                messages, options.defaultMessage
+            )
                 .then(next)
                 .catch(function (beautifyError) {
                     setTimeout(function () {
