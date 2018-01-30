@@ -12,7 +12,8 @@ var indexesCache = {};
  * @return {bool} True if and only if it is an unique error.
  */
 function isUniqueError(err) {
-    return err && err.name === 'MongoError' &&
+    return err &&
+        (err.name === 'BulkWriteError' || err.name === 'MongoError') &&
         (err.code === 11000 || err.code === 11001);
 }
 
@@ -133,6 +134,11 @@ module.exports = function (schema, options) {
     // Post hook that gets called after any save or update
     // operation and that filters unique errors
     var postHook = function (error, doc, next) {
+
+        if (!doc) {
+            doc = this;
+        }
+
         // If the next() function is missing, this might be
         // a sign that we are using an outdated Mongoose
         if (typeof next !== 'function') {

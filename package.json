@@ -1,7 +1,7 @@
 {
   "name": "mongoose-beautiful-unique-validation",
   "description": "Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "license": "MIT",
   "main": "index.js",
   "repository": {
@@ -33,7 +33,7 @@
   "devDependencies": {
     "eslint": "^4.4.1",
     "kerberos": "0.0.23",
-    "mongoose": "^4.11.6",
+    "mongoose": "5.0.2",
     "tap-spec": "^4.1.1",
     "tape": "^4.7.0"
   }
