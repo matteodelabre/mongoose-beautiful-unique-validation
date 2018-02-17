@@ -133,11 +133,10 @@ module.exports = function (schema, options) {
 
     // Post hook that gets called after any save or update
     // operation and that filters unique errors
-    var postHook = function (error, doc, next) {
-
-        if (!doc) {
-            doc = this;
-        }
+    var postHook = function (error, _, next) {
+        // Mongoose ≥5 does no longer pass the document as the
+        // second argument of 'update' hooks, so we use this instead
+        var doc = this;
 
         // If the next() function is missing, this might be
         // a sign that we are using an outdated Mongoose
