@@ -1,5 +1,11 @@
 # Changelog
 
+## v7.1.0
+
+### New features
+
+* Add support for Mongoose 5 (#46, #47).
+
 ## v7.0.0
 
 ### Breaking changes
