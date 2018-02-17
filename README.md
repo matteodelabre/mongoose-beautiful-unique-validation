@@ -215,6 +215,7 @@ Thanks to all contributors:
 * [Bhavik Vyas (bvyask)](https://github.com/bvyask)
 * [Nick Sellen](https://github.com/nicksellen)
 * [niftylettuce](https://github.com/niftylettuce)
+* [David Misshula](https://github.com/misshula)
 
 ## License
 
