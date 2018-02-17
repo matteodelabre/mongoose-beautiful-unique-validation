@@ -14,7 +14,7 @@ var mongouri = 'mongodb://127.0.0.1/mongoose-buv-'
 
 console.log('Connecting to ' + mongouri + '...');
 
-mongoose.connect(mongouri, {useMongoClient: true}).then(function () {
+mongoose.connect(mongouri).then(function () {
     // Run tests
     require('./save');
 
