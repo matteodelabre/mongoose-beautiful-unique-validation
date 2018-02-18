@@ -8,6 +8,12 @@ node_js:
     - "4"
 services:
     - mongodb
+env:
+    - MONGOOSE_VERSION="4"
+    - MONGOOSE_VERSION="5"
+install:
+    - npm install
+    - npm install mongoose@${MONGOOSE_VERSION}
 script:
     - npm run lint
     - npm run test
