@@ -46,6 +46,38 @@ function getValueByPath(obj, path) {
 }
 
 /**
+ * Recursively collect all messages inside a schema tree and
+ * change string values to `true`.
+ *
+ * @param {Object} tree Schema tree to update and collect from.
+ * @return {Object} Map of collected messages.
+ */
+function collectMessages(tree) {
+    var result = {};
+
+    for (var key in tree) {
+        if (tree.hasOwnProperty(key)) {
+            if (
+                typeof tree[key] === 'object'
+                && tree[key] !== null
+            ) {
+                if (typeof tree[key].unique === 'string') {
+                    // Schema property that has a custom
+                    // unique message
+                    result[key] = tree[key].unique;
+                    tree[key].unique = true;
+                } else {
+                    // Nested schema
+                    result[key] = collectMessages(tree[key]);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
  * Retrieve index information using collection#indexInformation
  * or previously cached data.
  *
@@ -101,17 +133,14 @@ function beautify(error, collection, values, messages, defaultMessage) {
             if (indexName in indexes) {
                 indexes[indexName].forEach(function (field) {
                     var path = field[0];
+                    var customMessage = getValueByPath(messages, path);
                     var props = {
                         type: 'unique',
                         path: path,
-                        value: getValueByPath(values, path)
+                        value: getValueByPath(values, path),
+                        message: typeof customMessage === 'string'
+                            ? customMessage : defaultMessage
                     };
-
-                    if (typeof messages[path] === 'string') {
-                        props.message = messages[path];
-                    } else {
-                        props.message = defaultMessage;
-                    }
 
                     suberrors[path] = new mongoose.Error.ValidatorError(props);
                 });
@@ -130,8 +159,6 @@ function beautify(error, collection, values, messages, defaultMessage) {
 }
 
 module.exports = function (schema, options) {
-    var tree = schema.tree, key, messages = {};
-
     options = options || {};
 
     if (!options.defaultMessage) {
@@ -140,14 +167,8 @@ module.exports = function (schema, options) {
 
     // Fetch error messages defined in the "unique" field,
     // store them for later use and replace them with true
-    for (key in tree) {
-        if (tree.hasOwnProperty(key)) {
-            if (tree[key] && tree[key].unique) {
-                messages[key] = tree[key].unique;
-                tree[key].unique = true;
-            }
-        }
-    }
+    var tree = schema.tree;
+    var messages = collectMessages(tree);
 
     schema._indexes.forEach(function (index) {
         if (index[0] && index[1] && index[1].unique) {
