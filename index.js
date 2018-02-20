@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 
-var errorRegex = /index:\s*(?:.+?\.\$)?(.*?)\s*dup/;
+var errorRegex = /index: (.+) dup key:/;
 var indexesCache = {};
 
 /**
