@@ -1,5 +1,13 @@
 # Changelog
 
+## v7.1.1
+
+### Fixed bugs
+
+* **Security fix:** mitigate potential ReDoS attack due to non-linear regular expression.
+* Fix path value appearing as `undefined` in nested schema.
+* Fix custom messages not taken in account in nested schema.
+
 ## v7.1.0
 
 ### New features
