@@ -30,6 +30,7 @@
         "space-in-parens": 2,
         "space-infix-ops": 2,
         "space-unary-ops": 2,
+        "operator-linebreak": [2, "before"],
         "no-trailing-spaces": 0,
         "no-underscore-dangle": 0,
 

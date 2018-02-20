@@ -35,8 +35,8 @@ mongoose.connect(mongouri, options).then(function () {
             return mongoose.disconnect();
         }).catch(function (err) {
             console.error(
-                'Could not clean up or disconnect from the ' +
-                'test database:', err
+                'Could not clean up or disconnect from the '
+                + 'test database:', err
             );
         });
     });

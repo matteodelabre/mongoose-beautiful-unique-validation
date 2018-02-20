@@ -12,9 +12,9 @@ var indexesCache = {};
  * @return {bool} True if and only if it is an unique error.
  */
 function isUniqueError(err) {
-    return err &&
-        (err.name === 'BulkWriteError' || err.name === 'MongoError') &&
-        (err.code === 11000 || err.code === 11001);
+    return err
+        && (err.name === 'BulkWriteError' || err.name === 'MongoError')
+        && (err.code === 11000 || err.code === 11001);
 }
 
 /**
@@ -196,11 +196,11 @@ module.exports = function (schema, options) {
         // a sign that we are using an outdated Mongoose
         if (typeof next !== 'function') {
             throw new Error(
-                'mongoose-beautiful-unique-validation error: ' +
-                'The hook was called incorrectly. Double check that ' +
-                'you are using mongoose@>=4.5.0; if you need to use ' +
-                'an outdated Mongoose version, please install this module ' +
-                'in version 4.0.0'
+                'mongoose-beautiful-unique-validation error: '
+                + 'The hook was called incorrectly. Double check that '
+                + 'you are using mongoose@>=4.5.0; if you need to use '
+                + 'an outdated Mongoose version, please install this module '
+                + 'in version 4.0.0'
             );
         }
 
@@ -229,8 +229,8 @@ module.exports = function (schema, options) {
                 .catch(function (beautifyError) {
                     setTimeout(function () {
                         throw new Error(
-                            'mongoose-beautiful-unique-validation error: ' +
-                            beautifyError.stack
+                            'mongoose-beautiful-unique-validation error: '
+                            + beautifyError.stack
                         );
                     });
                 });
