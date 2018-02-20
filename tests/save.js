@@ -550,6 +550,61 @@ test('should use custom validation messages w/ nested indexes', function (t) {
     });
 });
 
+test('should use custom messages w/ nested compound indexes', function (t) {
+    var NestedCompoundMessageSchema = new Schema({
+        general: {
+            name: String,
+            age: Number
+        }
+    });
+
+    NestedCompoundMessageSchema.index({
+        'general.name': 1,
+        'general.age': 1
+    }, {
+        unique: 'nested compound custom validation message'
+    });
+
+    var NestedCompoundMessage = mongoose.model(
+        'NestedCompoundMessage',
+        NestedCompoundMessageSchema
+    );
+
+    NestedCompoundMessage.on('index', function (indexErr) {
+        t.error(indexErr, 'indexes should be built correctly');
+
+        new NestedCompoundMessage({
+            general: {
+                name: 'Test nested objects',
+                age: 80
+            }
+        }).save().then(function () {
+            return new NestedCompoundMessage({
+                general: {
+                    name: 'Test nested objects',
+                    age: 80
+                }
+            }).save();
+        }, function (err) {
+            t.error(err, 'should save the first document successfully');
+            t.end();
+        }).then(function () {
+            t.fail('should not save the duplicate document successfully');
+            t.end();
+        }, function (err) {
+            assertUniqueError(t, err, {
+                'general.name': 'Test nested objects',
+                'general.age': 80
+            }, {
+                'general.name': 'nested compound custom validation message',
+                'general.age': 'nested compound custom validation message'
+            });
+
+            t.end();
+        });
+    });
+});
+
 test('should report duplicates on any mongoose type', function (t) {
     var AnyTypeSchema = new Schema({
         name: String,
