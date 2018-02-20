@@ -28,7 +28,6 @@ function assertUniqueError(t, err, dups, messages) {
             return true;
         }
 
-
         t.equal(suberr.name, 'ValidatorError',
             'each sub-error should be of name ValidatorError');
         t.equal(suberr.kind, 'unique',
@@ -334,6 +333,49 @@ test('should report duplicates on compound indexes', function (t) {
                 age: 'Path `age` (42) is not unique.'
             });
 
+            t.end();
+        });
+    });
+});
+
+test('should report duplicates on nested indexes', function (t) {
+    var NestedSchema = new Schema({
+        general: {
+            name: {
+                type: String,
+                unique: true
+            }
+        }
+    });
+
+    var Nested = mongoose.model('Nested', NestedSchema);
+
+    Nested.on('index', function (indexErr) {
+        t.error(indexErr, 'indexes should be built correctly');
+
+        new Nested({
+            general: {
+                name: 'Test nested objects'
+            }
+        }).save().then(function () {
+            return new Nested({
+                general: {
+                    name: 'Test nested objects'
+                }
+            }).save();
+        }, function (err) {
+            t.error(err, 'should save the first document successfully');
+            t.end();
+        }).then(function () {
+            t.fail('should not save the duplicate document successfully');
+            t.end();
+        }, function (err) {
+            assertUniqueError(
+                t, err,
+                {'general.name': 'Test nested objects'},
+                {'general.name': 'Path `general.name` '
+                    + '(Test nested objects) is not unique.'}
+            );
             t.end();
         });
     });
