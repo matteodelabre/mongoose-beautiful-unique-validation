@@ -18,6 +18,34 @@ function isUniqueError(err) {
 }
 
 /**
+ * Search for the value matching a path in dotted notation
+ * inside an object.
+ *
+ * @example
+ * - getValueByPath({a: {b: 2}}, 'a.b') -> 2
+ * - getValueByPath({}, 'a.b') -> undefined
+ * @param {Object} obj Nested object to search.
+ * @param {string} path Path of the value to search for.
+ * @return {*} Matching value, or undefined if none.
+ */
+function getValueByPath(obj, path) {
+    var segments = path.split('.');
+    var result = obj;
+
+    for (
+        var i = 0;
+        i < segments.length
+            && result !== null
+            && result !== undefined;
+        ++i
+    ) {
+        result = result[segments[i]];
+    }
+
+    return result;
+}
+
+/**
  * Retrieve index information using collection#indexInformation
  * or previously cached data.
  *
@@ -76,7 +104,7 @@ function beautify(error, collection, values, messages, defaultMessage) {
                     var props = {
                         type: 'unique',
                         path: path,
-                        value: values[path]
+                        value: getValueByPath(values, path)
                     };
 
                     if (typeof messages[path] === 'string') {
