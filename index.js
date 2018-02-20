@@ -68,7 +68,13 @@ function collectMessages(tree) {
                     tree[key].unique = true;
                 } else {
                     // Nested schema
-                    result[key] = collectMessages(tree[key]);
+                    var subtree = collectMessages(tree[key]);
+
+                    for (var subkey in subtree) {
+                        if (subtree.hasOwnProperty(subkey)) {
+                            result[key + '.' + subkey] = subtree[subkey];
+                        }
+                    }
                 }
             }
         }
@@ -133,13 +139,12 @@ function beautify(error, collection, values, messages, defaultMessage) {
             if (indexName in indexes) {
                 indexes[indexName].forEach(function (field) {
                     var path = field[0];
-                    var customMessage = getValueByPath(messages, path);
                     var props = {
                         type: 'unique',
                         path: path,
                         value: getValueByPath(values, path),
-                        message: typeof customMessage === 'string'
-                            ? customMessage : defaultMessage
+                        message: typeof messages[path] === 'string'
+                            ? messages[path] : defaultMessage
                     };
 
                     suberrors[path] = new mongoose.Error.ValidatorError(props);
