@@ -211,7 +211,7 @@ This is free and open source software. All contributions (even small ones) are w
 Thanks to all contributors:
 
 * [Bohdan Tkachenko](https://github.com/BohdanTkachenko)
-* [Savioo](https://github.com/Saviio)
+* [Saviio](https://github.com/Saviio)
 * [Bhavik Vyas (bvyask)](https://github.com/bvyask)
 * [Nick Sellen](https://github.com/nicksellen)
 * [niftylettuce](https://github.com/niftylettuce)
