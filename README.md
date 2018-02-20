@@ -216,6 +216,7 @@ Thanks to all contributors:
 * [Nick Sellen](https://github.com/nicksellen)
 * [niftylettuce](https://github.com/niftylettuce)
 * [David Misshula](https://github.com/misshula)
+* [James Davis](https://github.com/davisjam)
 
 ## License
 
