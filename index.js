@@ -129,7 +129,7 @@ function beautify(error, collection, values, messages, defaultMessage) {
     var matches = errorRegex.exec(error.message);
 
     if (matches) {
-        var indexName = matches[1];
+        var indexName = matches[1].split('$').pop();
 
         // Retrieve that index's list of fields
         onSuberrors = getIndexes(collection).then(function (indexes) {
