@@ -159,6 +159,8 @@ function beautify(error, collection, values, messages, defaultMessage) {
         var beautifiedError = new mongoose.Error.ValidationError();
 
         beautifiedError.errors = suberrors;
+        beautifiedError.code = error.code;
+        beautifiedError.fields = Object.keys(suberrors);
         return beautifiedError;
     });
 }
