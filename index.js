@@ -224,13 +224,13 @@ module.exports = function (schema, options) {
             beautify(
                 error, collection, values,
                 messages, options.defaultMessage
-            ).then(next, function(beautifyError) {
+            ).then(next, function (beautifyError) {
                 var unknownError = new Error(
-                  'mongoose-beautiful-unique-validation error'
+                    'mongoose-beautiful-unique-validation'
                 );
-              unknownError.stack += '\ncaused by: ' + beautifyError.stack;
+                unknownError.stack += '\ncaused by: ' + beautifyError.stack;
                 next(error);
-              });
+            });
         } else {
             // Pass over other errors
             next(error);
