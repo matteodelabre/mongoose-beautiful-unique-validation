@@ -68,7 +68,7 @@ function collectMessages(tree) {
                     tree[key].unique = true;
                 } else {
                     // Nested schema
-                    var subtree = collectMessages(tree[key]);
+                    var subtree = collectMessages(tree[key].tree);
 
                     for (var subkey in subtree) {
                         if (subtree.hasOwnProperty(subkey)) {
