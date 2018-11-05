@@ -68,7 +68,7 @@ function collectMessages(tree) {
                     tree[key].unique = true;
                 } else {
                     // Nested schema
-                    var subtree = collectMessages(tree[key]);
+                    var subtree = collectMessages(tree[key].tree || tree[key]);
 
                     for (var subkey in subtree) {
                         if (subtree.hasOwnProperty(subkey)) {
@@ -242,5 +242,7 @@ module.exports = function (schema, options) {
 
     schema.post('save', postHook);
     schema.post('update', postHook);
+    schema.post('updateOne', postHook);
+    schema.post('updateMany', postHook);
     schema.post('findOneAndUpdate', postHook);
 };
