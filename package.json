@@ -1,12 +1,12 @@
 {
   "name": "mongoose-beautiful-unique-validation",
   "description": "Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors",
-  "version": "7.1.1",
+  "version": "7.1.2",
   "license": "MIT",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/matteodelabre/mongoose-beautiful-unique-validation.git"
+    "url": "https://github.com/OguzBey/mongoose-beautiful-unique-validation.git"
   },
   "scripts": {
     "test": "tape tests | tap-spec",
@@ -23,9 +23,9 @@
     "unique"
   ],
   "author": {
-    "name": "Mattéo Delabre ✏️",
-    "email": "contact@matteodelabre.me",
-    "url": "https://github.com/matteodelabre"
+    "name": "Oğuzhan",
+    "email": "cfmelun@gmail.com",
+    "url": "https://github.com/OguzBey"
   },
   "peerDependencies": {
     "mongoose": ">=4.11.4"
